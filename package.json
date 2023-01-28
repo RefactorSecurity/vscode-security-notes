@@ -65,17 +65,20 @@
 				"title": "Cancel"
 			},
 			{
-				"command": "mywiki.startDraft",
-				"title": "Start Draft",
-				"enablement": "!commentIsEmpty"
-			},
-			{
-				"command": "mywiki.finishDraft",
-				"title": "Finish Draft"
-			},
-			{
 				"command": "mywiki.dispose",
 				"title": "Remove All Notes"
+			},
+			{
+				"command": "mywiki.setNoteStatusVulnerable",
+				"title": "Mark as Vulnerable"
+			},
+			{
+				"command": "mywiki.setNoteStatusNotVulnerable",
+				"title": "Mark as Not Vulnerable"
+			},
+			{
+				"command": "mywiki.setNoteStatusToDo",
+				"title": "Mark as To-Do"
 			}
 		],
 		"menus": {
@@ -94,6 +97,18 @@
 				},
 				{
 					"command": "mywiki.deleteNoteComment",
+					"when": "false"
+				},
+				{
+					"command": "mywiki.setNoteStatusVulnerable",
+					"when": "false"
+				},
+				{
+					"command": "mywiki.setNoteStatusNotVulnerable",
+					"when": "false"
+				},
+				{
+					"command": "mywiki.setNoteStatusToDo",
 					"when": "false"
 				}
 			],
@@ -116,14 +131,19 @@
 					"when": "commentController == comment-sample && !commentThreadIsEmpty"
 				},
 				{
-					"command": "mywiki.startDraft",
+					"command": "mywiki.setNoteStatusVulnerable",
 					"group": "inline",
-					"when": "commentController == comment-sample && commentThreadIsEmpty"
+					"when": "commentController == comment-sample && !commentThreadIsEmpty"
 				},
 				{
-					"command": "mywiki.finishDraft",
+					"command": "mywiki.setNoteStatusNotVulnerable",
 					"group": "inline",
-					"when": "commentController == comment-sample && commentThread == draft"
+					"when": "commentController == comment-sample && !commentThreadIsEmpty"
+				},
+				{
+					"command": "mywiki.setNoteStatusToDo",
+					"group": "inline",
+					"when": "commentController == comment-sample && !commentThreadIsEmpty"
 				}
 			],
 			"comments/comment/title": [

@@ -4,12 +4,18 @@ import * as vscode from 'vscode';
 
 let commentId = 1;
 
+enum NoteCommentStatus {
+	TODO = "To-Do",
+	Vulnerable = "Vulnerale",
+	NotVulnerable = "Not Vulnerable",
+}
+
 class NoteComment implements vscode.Comment {
 	id: number;
 	label: string | undefined;
 	savedBody: string | vscode.MarkdownString; // for the Cancel button
 	constructor(
-		public body: string | vscode.MarkdownString,
+		public body: string,
 		public mode: vscode.CommentMode,
 		public author: vscode.CommentAuthorInformation,
 		public parent?: vscode.CommentThread,
@@ -34,37 +40,11 @@ export function activate(context: vscode.ExtensionContext) {
 	};
 
 	context.subscriptions.push(vscode.commands.registerCommand('mywiki.createNote', (reply: vscode.CommentReply) => {
-		replyNote(reply);
+		replyNote(reply, true);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('mywiki.replyNote', (reply: vscode.CommentReply) => {
-		replyNote(reply);
-	}));
-
-	context.subscriptions.push(vscode.commands.registerCommand('mywiki.startDraft', (reply: vscode.CommentReply) => {
-		const thread = reply.thread;
-		thread.contextValue = 'draft';
-		const newComment = new NoteComment(reply.text, vscode.CommentMode.Preview, { name: 'vscode' }, thread);
-		newComment.label = 'pending';
-		thread.comments = [...thread.comments, newComment];
-	}));
-
-	context.subscriptions.push(vscode.commands.registerCommand('mywiki.finishDraft', (reply: vscode.CommentReply) => {
-		const thread = reply.thread;
-
-		if (!thread) {
-			return;
-		}
-
-		thread.contextValue = undefined;
-		thread.collapsibleState = vscode.CommentThreadCollapsibleState.Collapsed;
-		if (reply.text) {
-			const newComment = new NoteComment(reply.text, vscode.CommentMode.Preview, { name: 'vscode' }, thread);
-			thread.comments = [...thread.comments, newComment].map(comment => {
-				comment.label = undefined;
-				return comment;
-			});
-		}
+		replyNote(reply, false);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('mywiki.deleteNoteComment', (comment: NoteComment) => {
@@ -83,62 +63,87 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('mywiki.deleteNote', (thread: vscode.CommentThread) => {
 		thread.dispose();
 	}));
-
+	
 	context.subscriptions.push(vscode.commands.registerCommand('mywiki.cancelsaveNote', (comment: NoteComment) => {
 		if (!comment.parent) {
 			return;
 		}
-
+		
 		comment.parent.comments = comment.parent.comments.map(cmt => {
 			if ((cmt as NoteComment).id === comment.id) {
 				cmt.body = (cmt as NoteComment).savedBody;
 				cmt.mode = vscode.CommentMode.Preview;
 			}
-
+			
 			return cmt;
 		});
 	}));
-
+	
 	context.subscriptions.push(vscode.commands.registerCommand('mywiki.saveNote', (comment: NoteComment) => {
 		if (!comment.parent) {
 			return;
 		}
-
+		
 		comment.parent.comments = comment.parent.comments.map(cmt => {
 			if ((cmt as NoteComment).id === comment.id) {
 				(cmt as NoteComment).savedBody = cmt.body;
 				cmt.mode = vscode.CommentMode.Preview;
 			}
-
+			
 			return cmt;
 		});
 	}));
-
+	
 	context.subscriptions.push(vscode.commands.registerCommand('mywiki.editNote', (comment: NoteComment) => {
 		if (!comment.parent) {
 			return;
 		}
-
+		
 		comment.parent.comments = comment.parent.comments.map(cmt => {
 			if ((cmt as NoteComment).id === comment.id) {
 				cmt.mode = vscode.CommentMode.Editing;
 			}
-
+			
 			return cmt;
 		});
 	}));
-
+	
 	context.subscriptions.push(vscode.commands.registerCommand('mywiki.dispose', () => {
 		commentController.dispose();
 	}));
+	
+	context.subscriptions.push(vscode.commands.registerCommand('mywiki.setNoteStatusVulnerable', (commentReply: vscode.CommentReply) => setNoteStatus(commentReply, NoteCommentStatus.Vulnerable)));
 
-	function replyNote(reply: vscode.CommentReply) {
+	context.subscriptions.push(vscode.commands.registerCommand('mywiki.setNoteStatusNotVulnerable', (commentReply: vscode.CommentReply) => setNoteStatus(commentReply, NoteCommentStatus.NotVulnerable)));
+
+	context.subscriptions.push(vscode.commands.registerCommand('mywiki.setNoteStatusToDo', (commentReply: vscode.CommentReply) => setNoteStatus(commentReply, NoteCommentStatus.TODO)));
+	
+	function replyNote(reply: vscode.CommentReply, firstComment: boolean) {
 		const thread = reply.thread;
 		const newComment = new NoteComment(reply.text, vscode.CommentMode.Preview, { name: 'vscode' }, thread, thread.comments.length ? 'canDelete' : undefined);
-		if (thread.contextValue === 'draft') {
-			newComment.label = 'pending';
+		thread.comments = [...thread.comments, newComment];
+		if (firstComment) {
+			updateFirstCommentStatus(newComment, NoteCommentStatus.TODO);
 		}
+	}
 
+	function updateFirstCommentStatus(comment: vscode.Comment, status: NoteCommentStatus) {
+		// Remove previous status if any
+		comment.body = comment.body.toString().replace(/^\[.*\] /, '');
+		
+		// Set new status
+		comment.body = `[${status}] ${comment.body}`;
+	}
+
+	function setNoteStatus(reply: vscode.CommentReply, status: NoteCommentStatus) {
+		const thread = reply.thread;
+
+		// Prepend new status to first comment
+		updateFirstCommentStatus(thread.comments[0], status);
+
+		// Add comment about status change
+		const newComment = new NoteComment(`Status changed to ${status}.`, vscode.CommentMode.Preview, { name: 'vscode' }, thread, thread.comments.length ? 'canDelete' : undefined);
 		thread.comments = [...thread.comments, newComment];
 	}
+
 }
