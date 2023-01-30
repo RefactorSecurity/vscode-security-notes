@@ -2,13 +2,18 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from "fs";
 import { SemgrepParser } from './parsers/semgrep';
 import { Result } from './parsers/result';
+import { Serializer } from './persistence/serializer';
 
 const commentController = vscode.comments.createCommentController(
   'comment-sample',
   'Comment API Sample',
 );
+
+let threadList: vscode.CommentThread[] = [];
+
 let commentId = 1;
 
 class Resource {
@@ -293,12 +298,16 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
+export function deactivate(context: vscode.ExtensionContext) {
+  fs.writeFileSync('/tmp/zzz', Serializer.serialize(threadList));
+}
+
 class ImportToolResultsView implements vscode.WebviewViewProvider {
   public static readonly viewType = 'import-tool-results-view';
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(private readonly _extensionUri: vscode.Uri) { }
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -405,7 +414,9 @@ function saveNote(
   thread.comments = [...thread.comments, newComment];
   if (firstComment) {
     updateFirstCommentStatus(newComment, NoteCommentStatus.TODO);
+    threadList.push(thread);
   }
+
 }
 
 function updateFirstCommentStatus(comment: vscode.Comment, status: NoteCommentStatus) {
