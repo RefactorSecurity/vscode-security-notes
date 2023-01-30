@@ -2,6 +2,14 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { SemgrepParser } from './parsers/semgrep';
+import { Result } from './parsers/result';
+
+const commentController = vscode.comments.createCommentController(
+  'comment-sample',
+  'Comment API Sample',
+);
+let commentId = 1;
 
 class Resource {
   static icons: any;
@@ -79,11 +87,9 @@ function getReactionGroup(): { title: string; label: string; icon: vscode.Uri }[
   return ret;
 }
 
-let commentId = 1;
-
 enum NoteCommentStatus {
   TODO = 'To-Do',
-  Vulnerable = 'Vulnerale',
+  Vulnerable = 'Vulnerable',
   NotVulnerable = 'Not Vulnerable',
 }
 
@@ -108,10 +114,6 @@ export function activate(context: vscode.ExtensionContext) {
   Resource.initialize(context);
 
   // A `CommentController` is able to provide comments for documents.
-  const commentController = vscode.comments.createCommentController(
-    'comment-sample',
-    'Comment API Sample',
-  );
   context.subscriptions.push(commentController);
 
   // A `CommentingRangeProvider` controls where gutter decorations that allow adding comments are shown
@@ -277,56 +279,162 @@ export function activate(context: vscode.ExtensionContext) {
 
   function replyNote(reply: vscode.CommentReply, firstComment: boolean) {
     const thread = reply.thread;
-    const newComment = new NoteComment(
-      reply.text,
-      vscode.CommentMode.Preview,
-      { name: 'vscode' },
-      thread,
-      getReactionGroup().map((reaction) => ({
-        iconPath: reaction.icon,
-        label: reaction.label,
-        count: 0,
-        authorHasReacted: false,
-      })),
-      thread.comments.length ? 'canDelete' : undefined,
+    saveNote(thread, reply.text, 'user', firstComment);
+  }
+
+  // Webview for importing tool results
+  const importToolResultsView = new ImportToolResultsView(context.extensionUri);
+
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      ImportToolResultsView.viewType,
+      importToolResultsView,
+    ),
+  );
+}
+
+class ImportToolResultsView implements vscode.WebviewViewProvider {
+  public static readonly viewType = 'import-tool-results-view';
+
+  private _view?: vscode.WebviewView;
+
+  constructor(private readonly _extensionUri: vscode.Uri) {}
+
+  public resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    _context: vscode.WebviewViewResolveContext,
+    _token: vscode.CancellationToken,
+  ) {
+    this._view = webviewView;
+
+    webviewView.webview.options = {
+      // Allow scripts in the webview
+      enableScripts: true,
+
+      localResourceRoots: [this._extensionUri],
+    };
+
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+    webviewView.webview.onDidReceiveMessage((data) => {
+      switch (data.type) {
+        case 'processToolFile': {
+          processToolFile(data.toolName, data.fileContent);
+        }
+      }
+    });
+  }
+
+  private _getHtmlForWebview(webview: vscode.Webview) {
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, 'webview-assets', 'main.js'),
     );
-    thread.comments = [...thread.comments, newComment];
-    if (firstComment) {
-      updateFirstCommentStatus(newComment, NoteCommentStatus.TODO);
+    const styleResetUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, 'webview-assets', 'reset.css'),
+    );
+    const styleVSCodeUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, 'webview-assets', 'vscode.css'),
+    );
+    const styleMainUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, 'webview-assets', 'main.css'),
+    );
+
+    return `<!DOCTYPE html>
+			<html lang="en">
+				<head>
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <link href="${styleResetUri}" rel="stylesheet">
+          <link href="${styleVSCodeUri}" rel="stylesheet">
+          <link href="${styleMainUri}" rel="stylesheet">
+				</head>
+				<body>
+        <p>Select tool:</p>
+        <p>
+        <select id="toolSelect">
+        <option value="semgrep">semgrep</option>
+        </select>
+        </p>
+        <p>Select file:</p>
+        <p>
+        <input class=".color-input" type="file" id="fileInput"></input>
+        </p>
+        <p>
+        <button class="process-file-button">Import</button>
+        </p>
+        <script src="${scriptUri}"></script>
+				</body>
+			</html>`;
+  }
+}
+
+function processToolFile(toolName: string, fileContent: string) {
+  switch (toolName) {
+    case 'semgrep': {
+      const results = SemgrepParser.parse(fileContent);
+      results.map((result: Result) => {
+        const newThread = commentController.createCommentThread(
+          result.uri,
+          result.range,
+          [],
+        );
+        saveNote(newThread, result.text, 'semgrep', true);
+      });
     }
   }
+}
 
-  function updateFirstCommentStatus(
-    comment: vscode.Comment,
-    status: NoteCommentStatus,
-  ) {
-    // Remove previous status if any
-    comment.body = comment.body.toString().replace(/^\[.*\] /, '');
-
-    // Set new status
-    comment.body = `[${status}] ${comment.body}`;
+function saveNote(
+  thread: vscode.CommentThread,
+  text: string,
+  author: string,
+  firstComment: boolean,
+) {
+  const newComment = new NoteComment(
+    text,
+    vscode.CommentMode.Preview,
+    { name: author },
+    thread,
+    getReactionGroup().map((reaction) => ({
+      iconPath: reaction.icon,
+      label: reaction.label,
+      count: 0,
+      authorHasReacted: false,
+    })),
+    thread.comments.length ? 'canDelete' : undefined,
+  );
+  thread.comments = [...thread.comments, newComment];
+  if (firstComment) {
+    updateFirstCommentStatus(newComment, NoteCommentStatus.TODO);
   }
+}
 
-  function setNoteStatus(reply: vscode.CommentReply, status: NoteCommentStatus) {
-    const thread = reply.thread;
+function updateFirstCommentStatus(comment: vscode.Comment, status: NoteCommentStatus) {
+  // Remove previous status if any
+  comment.body = comment.body.toString().replace(/^\[.*\] /, '');
 
-    // Prepend new status to first comment
-    updateFirstCommentStatus(thread.comments[0], status);
+  // Set new status
+  comment.body = `[${status}] ${comment.body}`;
+}
 
-    // Add comment about status change
-    const newComment = new NoteComment(
-      `Status changed to ${status}.`,
-      vscode.CommentMode.Preview,
-      { name: 'vscode' },
-      thread,
-      getReactionGroup().map((reaction) => ({
-        iconPath: reaction.icon,
-        label: reaction.label,
-        count: 0,
-        authorHasReacted: false,
-      })),
-      thread.comments.length ? 'canDelete' : undefined,
-    );
-    thread.comments = [...thread.comments, newComment];
-  }
+function setNoteStatus(reply: vscode.CommentReply, status: NoteCommentStatus) {
+  const thread = reply.thread;
+
+  // Prepend new status to first comment
+  updateFirstCommentStatus(thread.comments[0], status);
+
+  // Add comment about status change
+  const newComment = new NoteComment(
+    `Status changed to ${status}.`,
+    vscode.CommentMode.Preview,
+    { name: 'vscode' },
+    thread,
+    getReactionGroup().map((reaction) => ({
+      iconPath: reaction.icon,
+      label: reaction.label,
+      count: 0,
+      authorHasReacted: false,
+    })),
+    thread.comments.length ? 'canDelete' : undefined,
+  );
+  thread.comments = [...thread.comments, newComment];
 }

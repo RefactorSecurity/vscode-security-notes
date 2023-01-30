@@ -170,6 +170,24 @@
           "when": "commentController == comment-sample"
         }
       ]
+    },
+    "views": {
+      "view-container": [
+        {
+          "type": "webview",
+          "name": "Import Tools Results",
+          "id": "import-tool-results-view"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "view-container",
+          "title": "vscode security review",
+          "icon": "resources/edit.svg"
+        }
+      ]
     }
   },
   "scripts": {
