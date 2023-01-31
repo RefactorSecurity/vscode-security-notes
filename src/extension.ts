@@ -6,6 +6,9 @@ import * as fs from "fs";
 import { SemgrepParser } from './parsers/semgrep';
 import { Result } from './parsers/result';
 import { Serializer } from './persistence/serializer';
+import { Deserializer } from './persistence/deserializer';
+
+const persistenceFile = 'vscode-security-review.json';
 
 const commentController = vscode.comments.createCommentController(
   'comment-sample',
@@ -98,7 +101,7 @@ enum NoteCommentStatus {
   NotVulnerable = 'Not Vulnerable',
 }
 
-class NoteComment implements vscode.Comment {
+export class NoteComment implements vscode.Comment {
   id: number;
   label: string | undefined;
   savedBody: string | vscode.MarkdownString; // for the Cancel button
@@ -296,10 +299,17 @@ export function activate(context: vscode.ExtensionContext) {
       importToolResultsView,
     ),
   );
+
+  // Check if persistence file exists and load comments
+  if (fs.existsSync(persistenceFile)) {
+    let jsonFile = fs.readFileSync(persistenceFile).toString();
+    let persistedThreads = JSON.parse(jsonFile);
+    threadList = Deserializer.deserialize(persistedThreads);
+  }
 }
 
 export function deactivate(context: vscode.ExtensionContext) {
-  fs.writeFileSync('/tmp/zzz', Serializer.serialize(threadList));
+  fs.writeFileSync(persistenceFile, Serializer.serialize(threadList));
 }
 
 class ImportToolResultsView implements vscode.WebviewViewProvider {

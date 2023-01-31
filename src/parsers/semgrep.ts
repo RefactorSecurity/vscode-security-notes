@@ -10,9 +10,12 @@ class SemgrepParser {
 
     const semgrepResults = obj.results;
     semgrepResults.map((semgrepResult: any) => {
-      const uri = vscode.Uri.file(
-        `${vscode.workspace.workspaceFolders[0].uri.fsPath}/${semgrepResult.path}`,
-      );
+      let fullPath = '';
+      if (vscode.workspace.workspaceFolders) {
+        fullPath = vscode.workspace.workspaceFolders[0].uri.fsPath + '/';
+      }
+      const uri = vscode.Uri.file(`${fullPath}${semgrepResult.path}`);
+
       const range = new vscode.Range(
         semgrepResult.start.line - 1,
         0,
