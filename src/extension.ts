@@ -2,13 +2,21 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from "fs";
 import { SemgrepParser } from './parsers/semgrep';
 import { Result } from './parsers/result';
+import { Serializer } from './persistence/serializer';
+import { Deserializer } from './persistence/deserializer';
+
+const persistenceFile = 'vscode-security-review.json';
 
 const commentController = vscode.comments.createCommentController(
   'comment-sample',
   'Comment API Sample',
 );
+
+let threadList: vscode.CommentThread[] = [];
+
 let commentId = 1;
 
 class Resource {
@@ -93,7 +101,7 @@ enum NoteCommentStatus {
   NotVulnerable = 'Not Vulnerable',
 }
 
-class NoteComment implements vscode.Comment {
+export class NoteComment implements vscode.Comment {
   id: number;
   label: string | undefined;
   savedBody: string | vscode.MarkdownString; // for the Cancel button
@@ -291,6 +299,17 @@ export function activate(context: vscode.ExtensionContext) {
       importToolResultsView,
     ),
   );
+
+  // Check if persistence file exists and load comments
+  if (fs.existsSync(persistenceFile)) {
+    let jsonFile = fs.readFileSync(persistenceFile).toString();
+    let persistedThreads = JSON.parse(jsonFile);
+    threadList = Deserializer.deserialize(persistedThreads);
+  }
+}
+
+export function deactivate(context: vscode.ExtensionContext) {
+  fs.writeFileSync(persistenceFile, Serializer.serialize(threadList));
 }
 
 class ImportToolResultsView implements vscode.WebviewViewProvider {
@@ -298,7 +317,7 @@ class ImportToolResultsView implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) {}
+  constructor(private readonly _extensionUri: vscode.Uri) { }
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -405,7 +424,9 @@ function saveNote(
   thread.comments = [...thread.comments, newComment];
   if (firstComment) {
     updateFirstCommentStatus(newComment, NoteCommentStatus.TODO);
+    threadList.push(thread);
   }
+
 }
 
 function updateFirstCommentStatus(comment: vscode.Comment, status: NoteCommentStatus) {
