@@ -1,14 +1,14 @@
 {
-  "name": "vscode-comment-api-example",
-  "displayName": "Comment API Sample",
-  "description": "Comment API Sample",
+  "name": "security-notes",
+  "displayName": "Security Notes",
+  "description": "Create notes during a security code review. Import your favorite SAST tool results and collaborate with others.",
   "version": "0.0.1",
-  "publisher": "vscode-samples",
+  "publisher": "Refactor Security",
   "private": true,
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Microsoft/vscode-extension-samples"
+    "url": "https://github.com/RefactorSecurity/vscode-security-notes"
   },
   "engines": {
     "vscode": "^1.65.0"
@@ -23,17 +23,17 @@
   "contributes": {
     "commands": [
       {
-        "command": "mywiki.createNote",
+        "command": "security-notes.createNote",
         "title": "Create Note",
         "enablement": "!commentIsEmpty"
       },
       {
-        "command": "mywiki.replyNote",
+        "command": "security-notes.replyNote",
         "title": "Reply",
         "enablement": "!commentIsEmpty"
       },
       {
-        "command": "mywiki.editNote",
+        "command": "security-notes.editNote",
         "title": "Edit",
         "icon": {
           "dark": "resources/edit_inverse.svg",
@@ -41,7 +41,7 @@
         }
       },
       {
-        "command": "mywiki.deleteNote",
+        "command": "security-notes.deleteNote",
         "title": "Delete",
         "icon": {
           "dark": "resources/close_inverse.svg",
@@ -49,7 +49,7 @@
         }
       },
       {
-        "command": "mywiki.deleteNoteComment",
+        "command": "security-notes.deleteNoteComment",
         "title": "Delete",
         "icon": {
           "dark": "resources/close_inverse.svg",
@@ -57,117 +57,117 @@
         }
       },
       {
-        "command": "mywiki.saveNote",
+        "command": "security-notes.saveNote",
         "title": "Save"
       },
       {
-        "command": "mywiki.cancelsaveNote",
+        "command": "security-notes.cancelsaveNote",
         "title": "Cancel"
       },
       {
-        "command": "mywiki.dispose",
+        "command": "security-notes.dispose",
         "title": "Remove All Notes"
       },
       {
-        "command": "mywiki.setNoteStatusVulnerable",
+        "command": "security-notes.setNoteStatusVulnerable",
         "title": "Mark as Vulnerable"
       },
       {
-        "command": "mywiki.setNoteStatusNotVulnerable",
+        "command": "security-notes.setNoteStatusNotVulnerable",
         "title": "Mark as Not Vulnerable"
       },
       {
-        "command": "mywiki.setNoteStatusToDo",
+        "command": "security-notes.setNoteStatusToDo",
         "title": "Mark as To-Do"
       }
     ],
     "menus": {
       "commandPalette": [
         {
-          "command": "mywiki.createNote",
+          "command": "security-notes.createNote",
           "when": "false"
         },
         {
-          "command": "mywiki.replyNote",
+          "command": "security-notes.replyNote",
           "when": "false"
         },
         {
-          "command": "mywiki.deleteNote",
+          "command": "security-notes.deleteNote",
           "when": "false"
         },
         {
-          "command": "mywiki.deleteNoteComment",
+          "command": "security-notes.deleteNoteComment",
           "when": "false"
         },
         {
-          "command": "mywiki.setNoteStatusVulnerable",
+          "command": "security-notes.setNoteStatusVulnerable",
           "when": "false"
         },
         {
-          "command": "mywiki.setNoteStatusNotVulnerable",
+          "command": "security-notes.setNoteStatusNotVulnerable",
           "when": "false"
         },
         {
-          "command": "mywiki.setNoteStatusToDo",
+          "command": "security-notes.setNoteStatusToDo",
           "when": "false"
         }
       ],
       "comments/commentThread/title": [
         {
-          "command": "mywiki.deleteNote",
+          "command": "security-notes.deleteNote",
           "group": "navigation",
-          "when": "commentController == comment-sample && !commentThreadIsEmpty"
+          "when": "commentController == security-notes && !commentThreadIsEmpty"
         }
       ],
       "comments/commentThread/context": [
         {
-          "command": "mywiki.createNote",
+          "command": "security-notes.createNote",
           "group": "inline",
-          "when": "commentController == comment-sample && commentThreadIsEmpty"
+          "when": "commentController == security-notes && commentThreadIsEmpty"
         },
         {
-          "command": "mywiki.replyNote",
+          "command": "security-notes.replyNote",
           "group": "inline",
-          "when": "commentController == comment-sample && !commentThreadIsEmpty"
+          "when": "commentController == security-notes && !commentThreadIsEmpty"
         },
         {
-          "command": "mywiki.setNoteStatusVulnerable",
+          "command": "security-notes.setNoteStatusVulnerable",
           "group": "inline",
-          "when": "commentController == comment-sample && !commentThreadIsEmpty"
+          "when": "commentController == security-notes && !commentThreadIsEmpty"
         },
         {
-          "command": "mywiki.setNoteStatusNotVulnerable",
+          "command": "security-notes.setNoteStatusNotVulnerable",
           "group": "inline",
-          "when": "commentController == comment-sample && !commentThreadIsEmpty"
+          "when": "commentController == security-notes && !commentThreadIsEmpty"
         },
         {
-          "command": "mywiki.setNoteStatusToDo",
+          "command": "security-notes.setNoteStatusToDo",
           "group": "inline",
-          "when": "commentController == comment-sample && !commentThreadIsEmpty"
+          "when": "commentController == security-notes && !commentThreadIsEmpty"
         }
       ],
       "comments/comment/title": [
         {
-          "command": "mywiki.editNote",
+          "command": "security-notes.editNote",
           "group": "group@1",
-          "when": "commentController == comment-sample"
+          "when": "commentController == security-notes"
         },
         {
-          "command": "mywiki.deleteNoteComment",
+          "command": "security-notes.deleteNoteComment",
           "group": "group@2",
-          "when": "commentController == comment-sample && comment == canDelete"
+          "when": "commentController == security-notes && comment == canDelete"
         }
       ],
       "comments/comment/context": [
         {
-          "command": "mywiki.cancelsaveNote",
+          "command": "security-notes.cancelsaveNote",
           "group": "inline@1",
-          "when": "commentController == comment-sample"
+          "when": "commentController == security-notes"
         },
         {
-          "command": "mywiki.saveNote",
+          "command": "security-notes.saveNote",
           "group": "inline@2",
-          "when": "commentController == comment-sample"
+          "when": "commentController == security-notes"
         }
       ]
     },
@@ -184,7 +184,7 @@
       "activitybar": [
         {
           "id": "view-container",
-          "title": "vscode security review",
+          "title": "Security Notes",
           "icon": "resources/edit.svg"
         }
       ]

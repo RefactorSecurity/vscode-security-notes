@@ -2,17 +2,17 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from "fs";
+import * as fs from 'fs';
 import { SemgrepParser } from './parsers/semgrep';
 import { Result } from './parsers/result';
 import { Serializer } from './persistence/serializer';
 import { Deserializer } from './persistence/deserializer';
 
-const persistenceFile = 'vscode-security-review.json';
+const persistenceFile = 'security-notes.json';
 
 const commentController = vscode.comments.createCommentController(
-  'comment-sample',
-  'Comment API Sample',
+  'security-notes',
+  'Security Notes',
 );
 
 let threadList: vscode.CommentThread[] = [];
@@ -160,7 +160,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'mywiki.createNote',
+      'security-notes.createNote',
       (reply: vscode.CommentReply) => {
         replyNote(reply, true);
       },
@@ -169,7 +169,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'mywiki.replyNote',
+      'security-notes.replyNote',
       (reply: vscode.CommentReply) => {
         replyNote(reply, false);
       },
@@ -178,7 +178,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'mywiki.deleteNoteComment',
+      'security-notes.deleteNoteComment',
       (comment: NoteComment) => {
         const thread = comment.parent;
         if (!thread) {
@@ -198,7 +198,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'mywiki.deleteNote',
+      'security-notes.deleteNote',
       (thread: vscode.CommentThread) => {
         thread.dispose();
       },
@@ -206,64 +206,73 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('mywiki.cancelsaveNote', (comment: NoteComment) => {
-      if (!comment.parent) {
-        return;
-      }
-
-      comment.parent.comments = comment.parent.comments.map((cmt) => {
-        if ((cmt as NoteComment).id === comment.id) {
-          cmt.body = (cmt as NoteComment).savedBody;
-          cmt.mode = vscode.CommentMode.Preview;
+    vscode.commands.registerCommand(
+      'security-notes.cancelsaveNote',
+      (comment: NoteComment) => {
+        if (!comment.parent) {
+          return;
         }
 
-        return cmt;
-      });
-    }),
+        comment.parent.comments = comment.parent.comments.map((cmt) => {
+          if ((cmt as NoteComment).id === comment.id) {
+            cmt.body = (cmt as NoteComment).savedBody;
+            cmt.mode = vscode.CommentMode.Preview;
+          }
+
+          return cmt;
+        });
+      },
+    ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('mywiki.saveNote', (comment: NoteComment) => {
-      if (!comment.parent) {
-        return;
-      }
-
-      comment.parent.comments = comment.parent.comments.map((cmt) => {
-        if ((cmt as NoteComment).id === comment.id) {
-          (cmt as NoteComment).savedBody = cmt.body;
-          cmt.mode = vscode.CommentMode.Preview;
+    vscode.commands.registerCommand(
+      'security-notes.saveNote',
+      (comment: NoteComment) => {
+        if (!comment.parent) {
+          return;
         }
 
-        return cmt;
-      });
-    }),
+        comment.parent.comments = comment.parent.comments.map((cmt) => {
+          if ((cmt as NoteComment).id === comment.id) {
+            (cmt as NoteComment).savedBody = cmt.body;
+            cmt.mode = vscode.CommentMode.Preview;
+          }
+
+          return cmt;
+        });
+      },
+    ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('mywiki.editNote', (comment: NoteComment) => {
-      if (!comment.parent) {
-        return;
-      }
-
-      comment.parent.comments = comment.parent.comments.map((cmt) => {
-        if ((cmt as NoteComment).id === comment.id) {
-          cmt.mode = vscode.CommentMode.Editing;
+    vscode.commands.registerCommand(
+      'security-notes.editNote',
+      (comment: NoteComment) => {
+        if (!comment.parent) {
+          return;
         }
 
-        return cmt;
-      });
-    }),
+        comment.parent.comments = comment.parent.comments.map((cmt) => {
+          if ((cmt as NoteComment).id === comment.id) {
+            cmt.mode = vscode.CommentMode.Editing;
+          }
+
+          return cmt;
+        });
+      },
+    ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('mywiki.dispose', () => {
+    vscode.commands.registerCommand('security-notes.dispose', () => {
       commentController.dispose();
     }),
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'mywiki.setNoteStatusVulnerable',
+      'security-notes.setNoteStatusVulnerable',
       (commentReply: vscode.CommentReply) =>
         setNoteStatus(commentReply, NoteCommentStatus.Vulnerable),
     ),
@@ -271,7 +280,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'mywiki.setNoteStatusNotVulnerable',
+      'security-notes.setNoteStatusNotVulnerable',
       (commentReply: vscode.CommentReply) =>
         setNoteStatus(commentReply, NoteCommentStatus.NotVulnerable),
     ),
@@ -279,7 +288,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'mywiki.setNoteStatusToDo',
+      'security-notes.setNoteStatusToDo',
       (commentReply: vscode.CommentReply) =>
         setNoteStatus(commentReply, NoteCommentStatus.TODO),
     ),
@@ -317,7 +326,7 @@ class ImportToolResultsView implements vscode.WebviewViewProvider {
 
   private _view?: vscode.WebviewView;
 
-  constructor(private readonly _extensionUri: vscode.Uri) { }
+  constructor(private readonly _extensionUri: vscode.Uri) {}
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -426,7 +435,6 @@ function saveNote(
     updateFirstCommentStatus(newComment, NoteCommentStatus.TODO);
     threadList.push(thread);
   }
-
 }
 
 function updateFirstCommentStatus(comment: vscode.Comment, status: NoteCommentStatus) {

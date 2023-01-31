@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import { Comment, CommentReaction, CommentThread, Range } from "vscode";
-import { NoteComment } from '../extension'
+import { NoteComment } from '../extension';
 
 // TODO: receive from extension.ts
 const commentController = vscode.comments.createCommentController(
-	'comment-sample',
-	'Comment API Sample',
+	"security-notes",
+	"Security Notes",
 );
 
 
