@@ -1,10 +1,6 @@
-import {
-  Comment,
-  CommentReaction,
-  CommentThread,
-  CommentThreadCollapsibleState,
-  Range,
-} from 'vscode';
+'use strict';
+
+import { Comment, CommentReaction, CommentThread, Range } from 'vscode';
 
 export class Serializer {
   static serializeReaction(reaction: CommentReaction) {
@@ -48,9 +44,9 @@ export class Serializer {
       comments: serializedComments,
     };
   }
-  public static serialize(threadList: CommentThread[]) {
+  public static serialize(noteList: CommentThread[]) {
     const serializedThreads: any[] = [];
-    threadList.map((thread) => {
+    noteList.map((thread) => {
       serializedThreads.push(this.serializeThread(thread));
     });
     return JSON.stringify(serializedThreads);

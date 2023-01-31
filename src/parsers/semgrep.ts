@@ -1,32 +1,35 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Result } from './result';
+import { ToolFinding } from '../models/toolFinding';
 
 class SemgrepParser {
   static parse(fileContent: string) {
-    const results: Result[] = [];
-    const obj = JSON.parse(fileContent);
+    const toolFindings: ToolFinding[] = [];
 
-    const semgrepResults = obj.results;
-    semgrepResults.map((semgrepResult: any) => {
+    const semgrepFindings = JSON.parse(fileContent).results;
+    semgrepFindings.map((semgrepFinding: any) => {
+      // uri
       let fullPath = '';
       if (vscode.workspace.workspaceFolders) {
         fullPath = vscode.workspace.workspaceFolders[0].uri.fsPath + '/';
       }
-      const uri = vscode.Uri.file(`${fullPath}${semgrepResult.path}`);
+      const uri = vscode.Uri.file(`${fullPath}${semgrepFinding.path}`);
 
+      // range
       const range = new vscode.Range(
-        semgrepResult.start.line - 1,
+        semgrepFinding.start.line - 1,
         0,
-        semgrepResult.end.line - 1,
+        semgrepFinding.end.line - 1,
         0,
       );
-      const result = new Result(uri, range, semgrepResult.extra.message);
-      results.push(result);
+
+      // instantiate tool finding and add to list
+      const toolFinding = new ToolFinding(uri, range, semgrepFinding.extra.message);
+      toolFindings.push(toolFinding);
     });
 
-    return results;
+    return toolFindings;
   }
 }
 

@@ -28,12 +28,12 @@
         "enablement": "!commentIsEmpty"
       },
       {
-        "command": "security-notes.replyNote",
+        "command": "security-notes.replyNoteComment",
         "title": "Reply",
         "enablement": "!commentIsEmpty"
       },
       {
-        "command": "security-notes.editNote",
+        "command": "security-notes.editNoteComment",
         "title": "Edit",
         "icon": {
           "dark": "resources/edit_inverse.svg",
@@ -57,16 +57,12 @@
         }
       },
       {
-        "command": "security-notes.saveNote",
+        "command": "security-notes.saveEditNoteComment",
         "title": "Save"
       },
       {
-        "command": "security-notes.cancelsaveNote",
+        "command": "security-notes.cancelEditNoteComment",
         "title": "Cancel"
-      },
-      {
-        "command": "security-notes.dispose",
-        "title": "Remove All Notes"
       },
       {
         "command": "security-notes.setNoteStatusVulnerable",
@@ -88,7 +84,7 @@
           "when": "false"
         },
         {
-          "command": "security-notes.replyNote",
+          "command": "security-notes.replyNoteComment",
           "when": "false"
         },
         {
@@ -126,7 +122,7 @@
           "when": "commentController == security-notes && commentThreadIsEmpty"
         },
         {
-          "command": "security-notes.replyNote",
+          "command": "security-notes.replyNoteComment",
           "group": "inline",
           "when": "commentController == security-notes && !commentThreadIsEmpty"
         },
@@ -148,7 +144,7 @@
       ],
       "comments/comment/title": [
         {
-          "command": "security-notes.editNote",
+          "command": "security-notes.editNoteComment",
           "group": "group@1",
           "when": "commentController == security-notes"
         },
@@ -160,12 +156,12 @@
       ],
       "comments/comment/context": [
         {
-          "command": "security-notes.cancelsaveNote",
+          "command": "security-notes.cancelEditNoteComment",
           "group": "inline@1",
           "when": "commentController == security-notes"
         },
         {
-          "command": "security-notes.saveNote",
+          "command": "security-notes.saveEditNoteComment",
           "group": "inline@2",
           "when": "commentController == security-notes"
         }
@@ -175,7 +171,7 @@
       "view-container": [
         {
           "type": "webview",
-          "name": "Import Tools Results",
+          "name": "Import Tool Results",
           "id": "import-tool-results-view"
         }
       ]

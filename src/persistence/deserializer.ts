@@ -1,12 +1,9 @@
-import * as vscode from 'vscode';
-import { Comment, CommentReaction, CommentThread, Range } from 'vscode';
-import { NoteComment } from '../extension';
+'use strict';
 
-// TODO: receive from extension.ts
-const commentController = vscode.comments.createCommentController(
-  'security-notes',
-  'Security Notes',
-);
+import * as vscode from 'vscode';
+import { CommentReaction, CommentThread, Range } from 'vscode';
+import { NoteComment } from '../models/noteComment';
+import { commentController } from '../controllers/comments';
 
 export class Deserializer {
   static deserializeReaction(reaction: any): CommentReaction {
@@ -53,9 +50,9 @@ export class Deserializer {
     return newThread;
   }
 
-  public static deserialize(deserializedThreadList: any[]): CommentThread[] {
+  public static deserialize(deserializednoteList: any[]): CommentThread[] {
     const deserializedCommentThreads: CommentThread[] = [];
-    deserializedThreadList.forEach((thread) => {
+    deserializednoteList.forEach((thread) => {
       deserializedCommentThreads.push(this.deserializeThread(thread));
     });
     return deserializedCommentThreads;

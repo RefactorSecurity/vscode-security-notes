@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 
-class Result {
+class ToolFinding {
   constructor(
     public uri: vscode.Uri,
     public range: vscode.Range,
@@ -10,4 +10,4 @@ class Result {
   ) {}
 }
 
-export { Result };
+export { ToolFinding };
