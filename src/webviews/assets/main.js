@@ -9,24 +9,15 @@
     .querySelector('.process-file-button')
     .addEventListener('click', () => onButtonClicked());
 
-  // // Handle messages sent from the extension to the webview
-  // window.addEventListener('message', (event) => {
-  //   const message = event.data; // The json data that the extension sent
-  //   switch (message.type) {
-  //     case 'foo': {
-  //       break;
-  //     }
-  //   }
-  // });
-
   function onButtonClicked() {
     let toolSelect = document.getElementById('toolSelect');
     let toolName = toolSelect.options[toolSelect.selectedIndex].text;
 
     let selectedFile = document.getElementById('fileInput').files[0];
-    readFile(selectedFile).then((fileContent) =>
+    readFile(selectedFile).then((fileContent) => {
       vscode.postMessage({ type: 'processToolFile', toolName, fileContent }),
-    );
+        (document.getElementById('fileInput').value = '');
+    });
   }
 
   async function readFile(file) {

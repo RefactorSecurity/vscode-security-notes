@@ -10,7 +10,7 @@ import { reactionHandler } from './handlers/reaction';
 import { loadCommentsFromFile, saveCommentsToFile } from './persistence';
 import { saveNoteComment, setNoteStatus } from './helpers';
 
-let noteList: vscode.CommentThread[] = [];
+const noteList: vscode.CommentThread[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
   Resource.initialize(context);
@@ -185,7 +185,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // load persisted comments from file
-  noteList = loadCommentsFromFile();
+  noteList.push(...loadCommentsFromFile());
 }
 
 export function deactivate(context: vscode.ExtensionContext) {

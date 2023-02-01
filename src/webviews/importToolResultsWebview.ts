@@ -106,15 +106,52 @@ function processToolFile(
     }
   }
 
-  // instantiate comments based on parsed tool findings
-  if (toolFindings.length) {
-    toolFindings.map((result: ToolFinding) => {
-      const newThread = commentController.createCommentThread(
-        result.uri,
-        result.range,
-        [],
-      );
-      saveNoteComment(newThread, result.text, true, noteList, toolName);
-    });
+  if (!toolFindings.length) {
+    vscode.window.showErrorMessage('An error has ocurred while parsing the file.');
+    return;
   }
+
+  if (noteList.length && identifyPotentialDuplicates(toolName, noteList)) {
+    vscode.window
+      .showWarningMessage(
+        `Potential duplicates. Current comments already include findings from ${toolName}. Do you want to import findings anyway?`,
+        'Yes',
+        'No',
+      )
+      .then((answer) => {
+        if (answer === 'Yes') {
+          saveToolFindings(toolFindings, noteList, toolName);
+        }
+      });
+  } else {
+    saveToolFindings(toolFindings, noteList, toolName);
+  }
+}
+
+function identifyPotentialDuplicates(
+  toolName: string,
+  noteList: vscode.CommentThread[],
+) {
+  return noteList.some((thread) => {
+    return thread.comments[0].author.name === toolName;
+  });
+}
+
+function saveToolFindings(
+  toolFindings: ToolFinding[],
+  noteList: vscode.CommentThread[],
+  toolName: string,
+) {
+  // instantiate comments based on parsed tool findings
+  toolFindings.forEach((toolFinding: ToolFinding) => {
+    const newThread = commentController.createCommentThread(
+      toolFinding.uri,
+      toolFinding.range,
+      [],
+    );
+    saveNoteComment(newThread, toolFinding.text, true, noteList, toolName);
+  });
+  vscode.window.showInformationMessage(
+    `${toolFindings.length} findings were imported successfully.`,
+  );
 }
