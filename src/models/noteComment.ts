@@ -15,8 +15,14 @@ export class NoteComment implements vscode.Comment {
     public parent?: vscode.CommentThread,
     public reactions: vscode.CommentReaction[] = [],
     public contextValue?: string,
+    public timestamp?: Date,
   ) {
     this.id = ++commentId;
     this.savedBody = this.body;
+    if (timestamp) {
+      this.timestamp = new Date(timestamp);
+    } else {
+      this.timestamp = new Date();
+    }
   }
 }

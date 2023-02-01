@@ -84,6 +84,41 @@
           "type": "string",
           "description": "Author name for comments.",
           "default": "User"
+        },
+        "security-notes.collab.enabled": {
+          "type": "boolean",
+          "description": "Enable collaboration via RethinkDB.",
+          "default": false
+        },
+        "security-notes.collab.host": {
+          "type": "string",
+          "description": "Hostname for the RethinkDB connection.",
+          "default": "localhost"
+        },
+        "security-notes.collab.port": {
+          "type": "number",
+          "description": "Port number for the RethinkDB connection.",
+          "default": 28015
+        },
+        "security-notes.collab.database": {
+          "type": "string",
+          "description": "Name of the RethinkDB database.",
+          "default": "security-notes"
+        },
+        "security-notes.collab.username": {
+          "type": "string",
+          "description": "Username for the RethinkDB connection.",
+          "default": "admin"
+        },
+        "security-notes.collab.password": {
+          "type": "string",
+          "description": "Password for the RethinkDB connection.",
+          "default": ""
+        },
+        "security-notes.collab.projectName": {
+          "type": "string",
+          "description": "Project name used as the RethinkDB table.",
+          "default": "project"
         }
       }
     },
@@ -204,6 +239,7 @@
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
+    "@types/rethinkdb": "^2.3.17",
     "@types/vscode": "~1.65.0",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
@@ -213,5 +249,10 @@
     "eslint-config-prettier": "^8.6.0",
     "prettier-linter-helpers": "^1.0.0",
     "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "@types/uuid": "^9.0.0",
+    "rethinkdb": "^2.4.2",
+    "uuid": "^9.0.0"
   }
 }

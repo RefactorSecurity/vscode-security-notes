@@ -1,12 +1,17 @@
 'use strict';
 
 import { Comment, CommentReaction, CommentThread, Range } from 'vscode';
+import { fullPathtoRelative } from '../../utils';
+import { Resource } from '../../reactions/resource';
 
 export class Serializer {
   static serializeReaction(reaction: CommentReaction) {
     return {
       count: reaction.count,
-      iconPath: reaction.iconPath,
+      iconPath: fullPathtoRelative(
+        reaction.iconPath.toString(),
+        Resource.extensionPath,
+      ),
       label: reaction.label,
     };
   }
@@ -33,22 +38,24 @@ export class Serializer {
     };
   }
 
-  static serializeThread(thread: CommentThread): any {
+  public static serializeThread(thread: CommentThread): any {
     const serializedComments: any[] = [];
-    thread.comments.map((comment) => {
+    thread.comments.forEach((comment) => {
       serializedComments.push(this.serializeComment(comment));
     });
     return {
       range: this.serializeRange(thread.range),
-      uri: thread.uri.path,
+      uri: fullPathtoRelative(thread.uri.path),
       comments: serializedComments,
+      id: thread.contextValue,
     };
   }
-  public static serialize(noteList: CommentThread[]) {
+
+  public static serialize(noteList: Map<string, CommentThread>) {
     const serializedThreads: any[] = [];
-    noteList.map((thread) => {
+    noteList.forEach((thread) => {
       serializedThreads.push(this.serializeThread(thread));
     });
-    return JSON.stringify(serializedThreads);
+    return serializedThreads;
   }
 }
