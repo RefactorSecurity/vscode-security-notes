@@ -114,7 +114,7 @@ function processToolFile(
         result.range,
         [],
       );
-      saveNoteComment(newThread, result.text, toolName, true, noteList);
+      saveNoteComment(newThread, result.text, true, noteList, toolName);
     });
   }
 }

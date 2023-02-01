@@ -77,6 +77,16 @@
         "title": "Mark as To-Do"
       }
     ],
+    "configuration": {
+      "title": "Security Notes",
+      "properties": {
+        "security-notes.authorName": {
+          "type": "string",
+          "description": "Author name for comments.",
+          "default": "User"
+        }
+      }
+    },
     "menus": {
       "commandPalette": [
         {

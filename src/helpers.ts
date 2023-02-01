@@ -6,14 +6,14 @@ import { getReactionGroup } from './reactions/resource';
 export const saveNoteComment = (
   thread: vscode.CommentThread,
   text: string,
-  author: string,
   firstComment: boolean,
   noteList: vscode.CommentThread[],
+  author?: string,
 ) => {
   const newComment = new NoteComment(
     text,
     vscode.CommentMode.Preview,
-    { name: author },
+    { name: author ? author : getSetting('authorName') },
     thread,
     getReactionGroup().map((reaction) => ({
       iconPath: reaction.icon,
@@ -40,7 +40,7 @@ export const setNoteStatus = (reply: vscode.CommentReply, status: NoteStatus) =>
   const newComment = new NoteComment(
     `Status changed to ${status}.`,
     vscode.CommentMode.Preview,
-    { name: 'user' },
+    { name: getSetting('authorName') },
     thread,
     getReactionGroup().map((reaction) => ({
       iconPath: reaction.icon,
@@ -59,4 +59,10 @@ const updateNoteStatus = (comment: vscode.Comment, status: NoteStatus) => {
 
   // Set new status
   comment.body = `[${status}] ${comment.body}`;
+};
+
+export const getSetting = (settingName: string, defaultValue?: any) => {
+  return vscode.workspace
+    .getConfiguration('security-notes')
+    .get(settingName, defaultValue);
 };

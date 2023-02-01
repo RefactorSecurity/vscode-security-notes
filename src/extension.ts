@@ -37,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'security-notes.createNote',
       (reply: vscode.CommentReply) => {
-        saveNoteComment(reply.thread, reply.text, 'user', true, noteList);
+        saveNoteComment(reply.thread, reply.text, true, noteList);
       },
     ),
   );
@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'security-notes.replyNoteComment',
       (reply: vscode.CommentReply) => {
-        saveNoteComment(reply.thread, reply.text, 'user', false, noteList);
+        saveNoteComment(reply.thread, reply.text, false, noteList);
       },
     ),
   );
