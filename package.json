@@ -2,6 +2,7 @@
   "name": "security-notes",
   "displayName": "Security Notes",
   "description": "Create notes during a security code review. Import your favorite SAST tool results and collaborate with others.",
+  "icon": "resources/security_notes_logo.png",
   "version": "0.0.1",
   "publisher": "Refactor Security",
   "private": true,
@@ -226,7 +227,7 @@
         {
           "id": "view-container",
           "title": "Security Notes",
-          "icon": "resources/edit.svg"
+          "icon": "resources/security_notes_icon.svg"
         }
       ]
     }
