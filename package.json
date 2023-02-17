@@ -86,6 +86,11 @@
           "description": "Author name for comments.",
           "default": "User"
         },
+        "security-notes.localDatabase": {
+          "type": "string",
+          "description": "Local database file path.",
+          "default": ".security-notes.json"
+        },
         "security-notes.collab.enabled": {
           "type": "boolean",
           "description": "Enable collaboration via RethinkDB.",

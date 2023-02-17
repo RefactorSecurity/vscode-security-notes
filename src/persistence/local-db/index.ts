@@ -3,9 +3,10 @@
 import * as fs from 'fs';
 import { Serializer } from '../serialization/serializer';
 import { Deserializer } from '../serialization/deserializer';
-import { CommentThread, CommentThreadCollapsibleState } from 'vscode';
+import { CommentThread } from 'vscode';
+import { getSetting } from '../../helpers';
 
-const persistenceFile = '/tmp/.security-notes.json';
+const persistenceFile = getSetting('localDatabase');
 
 export const saveCommentsToFile = (noteList: Map<string, CommentThread>) => {
   fs.writeFileSync(persistenceFile, JSON.stringify(Serializer.serialize(noteList)));

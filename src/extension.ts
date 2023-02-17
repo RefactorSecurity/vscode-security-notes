@@ -14,7 +14,7 @@ import {
   syncNoteMapWithRemote,
 } from './helpers';
 import { RemoteDb } from './persistence/remote-db';
-import { loadCommentsFromFile, saveCommentsToFile } from './persistence/local';
+import { loadCommentsFromFile, saveCommentsToFile } from './persistence/local-db';
 
 const noteMap = new Map<string, vscode.CommentThread>();
 let remoteDb: RemoteDb | undefined;
