@@ -173,23 +173,23 @@
           "when": "commentController == security-notes && commentThreadIsEmpty"
         },
         {
-          "command": "security-notes.replyNoteComment",
-          "group": "inline",
-          "when": "commentController == security-notes && !commentThreadIsEmpty"
-        },
-        {
           "command": "security-notes.setNoteStatusVulnerable",
-          "group": "inline",
+          "group": "inline@4",
           "when": "commentController == security-notes && !commentThreadIsEmpty"
         },
         {
           "command": "security-notes.setNoteStatusNotVulnerable",
-          "group": "inline",
+          "group": "inline@3",
           "when": "commentController == security-notes && !commentThreadIsEmpty"
         },
         {
           "command": "security-notes.setNoteStatusToDo",
-          "group": "inline",
+          "group": "inline@2",
+          "when": "commentController == security-notes && !commentThreadIsEmpty"
+        },
+        {
+          "command": "security-notes.replyNoteComment",
+          "group": "inline@1",
           "when": "commentController == security-notes && !commentThreadIsEmpty"
         }
       ],
