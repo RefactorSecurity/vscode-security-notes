@@ -2,13 +2,17 @@ import * as vscode from 'vscode';
 import { NoteStatus } from './models/noteStatus';
 import { NoteComment } from './models/noteComment';
 import { getReactionGroup } from './reactions/resource';
+import { RemoteDb } from './persistence/remote-db';
+import { v4 as uuidv4 } from 'uuid';
+import { Deserializer } from './persistence/serialization/deserializer';
 
 export const saveNoteComment = (
   thread: vscode.CommentThread,
   text: string,
   firstComment: boolean,
-  noteList: vscode.CommentThread[],
+  noteMap: Map<string, vscode.CommentThread>,
   author?: string,
+  remoteDb?: RemoteDb,
 ) => {
   const newComment = new NoteComment(
     text,
@@ -26,31 +30,33 @@ export const saveNoteComment = (
   thread.comments = [...thread.comments, newComment];
   if (firstComment) {
     updateNoteStatus(newComment, NoteStatus.TODO);
-    noteList.push(thread);
+    thread.contextValue = uuidv4();
+    noteMap.set(thread.contextValue, thread);
+  }
+  if (remoteDb) {
+    remoteDb.pushNoteComment(thread, firstComment);
   }
 };
 
-export const setNoteStatus = (reply: vscode.CommentReply, status: NoteStatus) => {
-  const thread = reply.thread;
-
+export const setNoteStatus = (
+  thread: vscode.CommentThread,
+  status: NoteStatus,
+  noteMap: Map<string, vscode.CommentThread>,
+  author?: string,
+  remoteDb?: RemoteDb,
+) => {
   // Prepend new status on first note comment
   updateNoteStatus(thread.comments[0], status);
 
   // Add note comment about status change
-  const newComment = new NoteComment(
-    `Status changed to ${status}.`,
-    vscode.CommentMode.Preview,
-    { name: getSetting('authorName') },
+  saveNoteComment(
     thread,
-    getReactionGroup().map((reaction) => ({
-      iconPath: reaction.icon,
-      label: reaction.label,
-      count: 0,
-      authorHasReacted: false,
-    })),
-    thread.comments.length ? 'canDelete' : undefined,
+    `Status changed to ${status}.`,
+    false,
+    noteMap,
+    author ? author : '',
+    remoteDb,
   );
-  thread.comments = [...thread.comments, newComment];
 };
 
 const updateNoteStatus = (comment: vscode.Comment, status: NoteStatus) => {
@@ -59,6 +65,80 @@ const updateNoteStatus = (comment: vscode.Comment, status: NoteStatus) => {
 
   // Set new status
   comment.body = `[${status}] ${comment.body}`;
+};
+
+export const mergeThread = (local: vscode.CommentThread, remote: any): boolean => {
+  // add comments of new thread to current thread if not exist
+  // TODO: replace with structuredClone()
+  const mergedComments: vscode.Comment[] = [];
+  let merged = false;
+  local.comments.forEach((comment) => {
+    mergedComments.push(comment);
+  });
+
+  remote.comments.forEach((comment: any) => {
+    comment = Deserializer.deserializeComment(comment, undefined);
+    if (
+      !local.comments.find(
+        (currentComment) =>
+          Number(currentComment.timestamp) == Number(comment.timestamp),
+      )
+    ) {
+      comment.parent = local;
+      mergedComments.push(comment);
+      merged = true;
+    }
+  });
+
+  // sort all comments and assign unique comments to current thread
+  mergedComments.sort(
+    (a: vscode.Comment, b: vscode.Comment) =>
+      (a.timestamp ? Number(a.timestamp) : 0) - (b.timestamp ? Number(b.timestamp) : 0),
+  );
+
+  // assigned unique and sorted comments to current thread
+  local.comments = mergedComments;
+  return merged;
+};
+
+export const syncNoteMapWithRemote = (
+  noteMap: Map<string, vscode.CommentThread>,
+  remoteSerializedThreads: any,
+  remoteDb: RemoteDb | undefined,
+) => {
+  // pull remote threads
+  remoteSerializedThreads.forEach((remoteSerializedThread: any) => {
+    const threadId = remoteSerializedThread.id;
+    // if remote thread doesn't exist in local map, add it to local
+    if (!noteMap.has(threadId)) {
+      const remoteThread: vscode.CommentThread =
+        Deserializer.deserializeThread(remoteSerializedThread);
+      noteMap.set(threadId, remoteThread);
+      return;
+    }
+
+    // get local thread
+    const localThread = noteMap.get(threadId);
+    if (!localThread) {
+      return;
+    }
+
+    // if new comments were merged, push to remote
+    if (mergeThread(localThread, remoteSerializedThread)) {
+      remoteDb && remoteDb.pushNoteComment(localThread, false);
+    }
+  });
+
+  // push local only threads to remote
+  noteMap.forEach((localThread, id) => {
+    if (
+      !remoteSerializedThreads.find((remoteSerializedThread: any) => {
+        return remoteSerializedThread.contextValue == id;
+      })
+    ) {
+      remoteDb && remoteDb.pushNoteComment(localThread, true);
+    }
+  });
 };
 
 export const getSetting = (settingName: string, defaultValue?: any) => {

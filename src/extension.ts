@@ -7,13 +7,33 @@ import { Resource } from './reactions/resource';
 import { ImportToolResultsWebview } from './webviews/importToolResultsWebview';
 import { commentController } from './controllers/comments';
 import { reactionHandler } from './handlers/reaction';
-import { loadCommentsFromFile, saveCommentsToFile } from './persistence';
-import { saveNoteComment, setNoteStatus } from './helpers';
+import {
+  getSetting,
+  saveNoteComment,
+  setNoteStatus,
+  syncNoteMapWithRemote,
+} from './helpers';
+import { RemoteDb } from './persistence/remote-db';
+import { loadCommentsFromFile, saveCommentsToFile } from './persistence/local';
 
-const noteList: vscode.CommentThread[] = [];
+const noteMap = new Map<string, vscode.CommentThread>();
+let remoteDb: RemoteDb | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
   Resource.initialize(context);
+  if (getSetting('collab.enabled')) {
+    remoteDb = new RemoteDb(
+      getSetting('collab.host'),
+      getSetting('collab.port'),
+      getSetting('collab.username'),
+      getSetting('collab.password'),
+      getSetting('collab.database'),
+      getSetting('collab.projectName'),
+      noteMap,
+    );
+  } else {
+    remoteDb = undefined;
+  }
 
   // A `CommentController` is able to provide comments for documents.
   context.subscriptions.push(commentController);
@@ -37,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'security-notes.createNote',
       (reply: vscode.CommentReply) => {
-        saveNoteComment(reply.thread, reply.text, true, noteList);
+        saveNoteComment(reply.thread, reply.text, true, noteMap, '', remoteDb);
       },
     ),
   );
@@ -47,7 +67,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'security-notes.replyNoteComment',
       (reply: vscode.CommentReply) => {
-        saveNoteComment(reply.thread, reply.text, false, noteList);
+        saveNoteComment(reply.thread, reply.text, false, noteMap, '', remoteDb);
       },
     ),
   );
@@ -119,6 +139,9 @@ export function activate(context: vscode.ExtensionContext) {
             cmt.mode = vscode.CommentMode.Preview;
           }
 
+          if (remoteDb && comment.parent) {
+            remoteDb.pushNoteComment(comment.parent, false);
+          }
           return cmt;
         });
       },
@@ -150,7 +173,13 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'security-notes.setNoteStatusVulnerable',
       (commentReply: vscode.CommentReply) =>
-        setNoteStatus(commentReply, NoteStatus.Vulnerable),
+        setNoteStatus(
+          commentReply.thread,
+          NoteStatus.Vulnerable,
+          noteMap,
+          '',
+          remoteDb,
+        ),
     ),
   );
 
@@ -159,7 +188,13 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'security-notes.setNoteStatusNotVulnerable',
       (commentReply: vscode.CommentReply) =>
-        setNoteStatus(commentReply, NoteStatus.NotVulnerable),
+        setNoteStatus(
+          commentReply.thread,
+          NoteStatus.NotVulnerable,
+          noteMap,
+          '',
+          remoteDb,
+        ),
     ),
   );
 
@@ -168,14 +203,15 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'security-notes.setNoteStatusToDo',
       (commentReply: vscode.CommentReply) =>
-        setNoteStatus(commentReply, NoteStatus.TODO),
+        setNoteStatus(commentReply.thread, NoteStatus.TODO, noteMap, '', remoteDb),
     ),
   );
 
   // webview for importing tool results
   const importToolResultsWebview = new ImportToolResultsWebview(
     context.extensionUri,
-    noteList,
+    noteMap,
+    remoteDb,
   );
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -185,10 +221,22 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // load persisted comments from file
-  noteList.push(...loadCommentsFromFile());
+  const persistedThreads = loadCommentsFromFile();
+  persistedThreads.forEach((thread) => {
+    noteMap.set(thread.contextValue ? thread.contextValue : '', thread);
+  });
+
+  // initial retrieval of notes from database
+  setTimeout(() => {
+    if (remoteDb) {
+      remoteDb.retrieveAll().then((remoteThreads) => {
+        syncNoteMapWithRemote(noteMap, remoteThreads, remoteDb);
+      });
+    }
+  }, 1500);
 }
 
 export function deactivate(context: vscode.ExtensionContext) {
   // persist comments in file
-  saveCommentsToFile(noteList);
+  saveCommentsToFile(noteMap);
 }

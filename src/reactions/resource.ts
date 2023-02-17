@@ -4,9 +4,11 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 
 export class Resource {
+  static extensionPath: string;
   static icons: any;
 
   static initialize(context: vscode.ExtensionContext) {
+    Resource.extensionPath = context.asAbsolutePath('');
     Resource.icons = {
       reactions: {
         THUMBS_UP: context.asAbsolutePath(

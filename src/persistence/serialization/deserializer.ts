@@ -2,20 +2,25 @@
 
 import * as vscode from 'vscode';
 import { CommentReaction, CommentThread, Range } from 'vscode';
-import { NoteComment } from '../models/noteComment';
-import { commentController } from '../controllers/comments';
+import { NoteComment } from '../../models/noteComment';
+import { commentController } from '../../controllers/comments';
+import { relativePathtoFull } from '../../utils';
+import { Resource } from '../../reactions/resource';
 
 export class Deserializer {
   static deserializeReaction(reaction: any): CommentReaction {
     return {
       count: reaction.count,
-      iconPath: reaction.iconPath,
+      iconPath: relativePathtoFull(reaction.iconPath, Resource.extensionPath),
       label: reaction.label,
       authorHasReacted: false,
     };
   }
 
-  static deserializeComment(comment: any, parent: CommentThread): NoteComment {
+  static deserializeComment(
+    comment: any,
+    parent: CommentThread | undefined,
+  ): NoteComment {
     const deserializedReactions: any[] = [];
     comment.reactions.forEach((reaction: any) => {
       deserializedReactions.push(this.deserializeReaction(reaction));
@@ -27,6 +32,7 @@ export class Deserializer {
       parent,
       deserializedReactions,
       undefined,
+      comment.timestamp,
     );
     return newComment;
   }
@@ -36,12 +42,12 @@ export class Deserializer {
   }
 
   static deserializeThread(thread: any): CommentThread {
-    // TODO: do NoteComments need a parent?
     const newThread = commentController.createCommentThread(
-      vscode.Uri.file(thread.uri),
+      vscode.Uri.file(relativePathtoFull(thread.uri)),
       this.deserializeRange(thread.range),
       [],
     );
+    newThread.contextValue = thread.id;
     const deserializedComments: NoteComment[] = [];
     thread.comments.forEach((comment: any) => {
       deserializedComments.push(this.deserializeComment(comment, newThread));

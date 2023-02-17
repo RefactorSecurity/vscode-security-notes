@@ -5,18 +5,22 @@ import { commentController } from '../controllers/comments';
 import { SemgrepParser } from '../parsers/semgrep';
 import { ToolFinding } from '../models/toolFinding';
 import { saveNoteComment } from '../helpers';
+import { RemoteDb } from '../persistence/remote-db';
 
 export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
   public static readonly viewType = 'import-tool-results-view';
 
   private _view?: vscode.WebviewView;
-  private noteList: vscode.CommentThread[];
+  private noteMap: Map<string, vscode.CommentThread>;
+  private remoteDb: RemoteDb | undefined;
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    noteList: vscode.CommentThread[],
+    noteMap: Map<string, vscode.CommentThread>,
+    remoteDb: RemoteDb | undefined,
   ) {
-    this.noteList = noteList;
+    this.noteMap = noteMap;
+    this.remoteDb = remoteDb ? remoteDb : undefined;
   }
 
   public resolveWebviewView(
@@ -38,7 +42,12 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
         case 'processToolFile': {
-          processToolFile(data.toolName, data.fileContent, this.noteList);
+          processToolFile(
+            data.toolName,
+            data.fileContent,
+            this.noteMap,
+            this.remoteDb,
+          );
         }
       }
     });
@@ -95,7 +104,8 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
 function processToolFile(
   toolName: string,
   fileContent: string,
-  noteList: vscode.CommentThread[],
+  noteMap: Map<string, vscode.CommentThread>,
+  remoteDb: RemoteDb | undefined,
 ) {
   let toolFindings: ToolFinding[] = [];
 
@@ -111,7 +121,7 @@ function processToolFile(
     return;
   }
 
-  if (noteList.length && identifyPotentialDuplicates(toolName, noteList)) {
+  if (noteMap.size && identifyPotentialDuplicates(toolName, noteMap)) {
     vscode.window
       .showWarningMessage(
         `Potential duplicates. Current comments already include findings from ${toolName}. Do you want to import findings anyway?`,
@@ -120,27 +130,29 @@ function processToolFile(
       )
       .then((answer) => {
         if (answer === 'Yes') {
-          saveToolFindings(toolFindings, noteList, toolName);
+          saveToolFindings(toolFindings, noteMap, toolName, remoteDb);
         }
       });
   } else {
-    saveToolFindings(toolFindings, noteList, toolName);
+    saveToolFindings(toolFindings, noteMap, toolName, remoteDb);
   }
 }
 
 function identifyPotentialDuplicates(
   toolName: string,
-  noteList: vscode.CommentThread[],
+  noteMap: Map<string, vscode.CommentThread>,
 ) {
-  return noteList.some((thread) => {
-    return thread.comments[0].author.name === toolName;
-  });
+  // return noteList.some((thread) => {
+  //   return thread.comments[0].author.name === toolName;
+  // });
+  return false;
 }
 
 function saveToolFindings(
   toolFindings: ToolFinding[],
-  noteList: vscode.CommentThread[],
+  noteMap: Map<string, vscode.CommentThread>,
   toolName: string,
+  remoteDb: RemoteDb | undefined,
 ) {
   // instantiate comments based on parsed tool findings
   toolFindings.forEach((toolFinding: ToolFinding) => {
@@ -149,7 +161,7 @@ function saveToolFindings(
       toolFinding.range,
       [],
     );
-    saveNoteComment(newThread, toolFinding.text, true, noteList, toolName);
+    saveNoteComment(newThread, toolFinding.text, true, noteMap, toolName, remoteDb);
   });
   vscode.window.showInformationMessage(
     `${toolFindings.length} findings were imported successfully.`,
