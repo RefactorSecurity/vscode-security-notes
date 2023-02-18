@@ -4,14 +4,18 @@ import * as vscode from 'vscode';
 import { CommentReaction, CommentThread, Range } from 'vscode';
 import { NoteComment } from '../../models/noteComment';
 import { commentController } from '../../controllers/comments';
-import { relativePathtoFull } from '../../utils';
+import { isWindows, pathToWin32, relativePathToFull } from '../../utils';
 import { Resource } from '../../reactions/resource';
 
 export class Deserializer {
   static deserializeReaction(reaction: any): CommentReaction {
+    let iconPath = relativePathToFull(reaction.iconPath, Resource.extensionPath);
+    if (isWindows()) {
+      iconPath = pathToWin32(iconPath);
+    }
     return {
       count: reaction.count,
-      iconPath: relativePathtoFull(reaction.iconPath, Resource.extensionPath),
+      iconPath: iconPath,
       label: reaction.label,
       authorHasReacted: false,
     };
@@ -42,8 +46,12 @@ export class Deserializer {
   }
 
   static deserializeThread(thread: any): CommentThread {
+    let uri = relativePathToFull(thread.uri);
+    if (isWindows()) {
+      uri = pathToWin32(uri);
+    }
     const newThread = commentController.createCommentThread(
-      vscode.Uri.file(relativePathtoFull(thread.uri)),
+      vscode.Uri.file(uri),
       this.deserializeRange(thread.range),
       [],
     );

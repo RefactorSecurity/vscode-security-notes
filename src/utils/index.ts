@@ -2,6 +2,11 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { platform } from 'os';
+
+export const isWindows = () => {
+  return platform() === 'win32';
+};
 
 export const pathToPosix = (aPath: string) => {
   return aPath.split(path.sep).join(path.posix.sep);
@@ -19,14 +24,14 @@ export const getWorkspacePath = () => {
   }
 };
 
-export const relativePathtoFull = (aPath: string, basePath?: string) => {
+export const relativePathToFull = (aPath: string, basePath?: string) => {
   if (basePath) {
     return path.join(basePath, aPath);
   }
   return path.join(getWorkspacePath(), aPath);
 };
 
-export const fullPathtoRelative = (aPath: string, basePath?: string) => {
+export const fullPathToRelative = (aPath: string, basePath?: string) => {
   if (basePath) {
     return path.relative(basePath, aPath);
   }
