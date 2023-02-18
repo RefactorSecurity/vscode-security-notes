@@ -9,7 +9,9 @@ export class Serializer {
     return {
       count: reaction.count,
       iconPath: fullPathtoRelative(
-        reaction.iconPath.toString(),
+        typeof reaction.iconPath === 'string'
+          ? reaction.iconPath
+          : reaction.iconPath.fsPath,
         Resource.extensionPath,
       ),
       label: reaction.label,
