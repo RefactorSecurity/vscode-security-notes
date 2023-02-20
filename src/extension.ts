@@ -29,6 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
       getSetting('collab.password'),
       getSetting('collab.database'),
       getSetting('collab.projectName'),
+      getSetting('collab.ssl'),
       noteMap,
     );
   } else {

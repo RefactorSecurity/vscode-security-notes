@@ -121,6 +121,11 @@
           "description": "Password for the RethinkDB connection.",
           "default": ""
         },
+        "security-notes.collab.ssl": {
+          "type": "string",
+          "description": "SSL/TLS certificate file path for the RethinkDB connection (optional).",
+          "default": ""
+        },
         "security-notes.collab.projectName": {
           "type": "string",
           "description": "Project name used as the RethinkDB table.",

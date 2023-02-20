@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as rethinkdb from 'rethinkdb';
 import { Serializer } from '../serialization/serializer';
 import { Deserializer } from '../serialization/deserializer';
+import { readFileSync } from 'fs';
 
 export class RemoteDb {
   private host: string;
@@ -10,6 +11,7 @@ export class RemoteDb {
   private password: string;
   private database: string;
   private table: string;
+  private ssl: string;
   private noteMap: Map<string, vscode.CommentThread>;
   private connection: any;
 
@@ -20,6 +22,7 @@ export class RemoteDb {
     password: string,
     database: string,
     table: string,
+    ssl: string,
     noteMap: Map<string, vscode.CommentThread>,
   ) {
     this.host = host;
@@ -28,6 +31,7 @@ export class RemoteDb {
     this.password = password;
     this.database = database;
     this.table = table;
+    this.ssl = ssl;
     this.noteMap = noteMap;
 
     this.connect();
@@ -41,6 +45,12 @@ export class RemoteDb {
         db: this.database,
         user: this.username,
         password: this.password,
+        ssl:
+          this.ssl !== ''
+            ? {
+                ca: readFileSync(this.ssl).toString().trim(),
+              }
+            : undefined,
       },
       (err: Error, conn: any) => {
         if (err) {
