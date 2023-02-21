@@ -60,7 +60,7 @@ We recommend following instructions in RethinkDB [installation guide](https://re
 
 Naturally, you will want to collaborate with remote peers. To do so in a secure way, we recommend setting up access to RethinkDB via SSH or through a VPN like [Tailscale](http://tailscale.com). This way, you avoid having to expose the instance to any network, and also ensuring information in transit is encrypted.
 
-> **Important Note:** When collaborating with others, ensure that all VSCode instances open the project from the same relative location. For example, if the source code repository you're reviewing has a directory structure like `source_code/app/src`, all peers should open VScode at the same level. Security Notes will store note location using relative paths, so they should be consistent.
+> **Important Notices:** When collaborating with others, ensure that all VSCode instances open the project from the same relative location. For example, if the source code repository you're reviewing has a directory structure like `source_code/app/src`, all peers should open VScode at the same level. Security Notes will store note location using relative paths, so they should be consistent. Also, after enabling the collaboration setting, VSCode would need to be restarted/reloaded for the change to have effect.
 
 ## Importing SAST results
 
