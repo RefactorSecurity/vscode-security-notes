@@ -1,0 +1,8 @@
+.eslintignore
+.gitignore
+.vscode/
+eslintrc.json
+images/
+package.json
+tsconfig.json
+README.md
