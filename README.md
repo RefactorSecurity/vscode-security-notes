@@ -20,7 +20,7 @@ Finally, collaborate with others by using a centralized database for notes that 
 
 ## Try it out!
 
-Download the extension directly from the Visual Studio [Marketplace]() and you should be ready to go :)
+Download the extension directly from the Visual Studio [Marketplace](https://marketplace.visualstudio.com/items?itemName=refactor-security.security-notes) and you should be ready to go :)
 
 ### Alternative installation methods
 
