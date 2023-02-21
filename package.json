@@ -4,7 +4,7 @@
   "description": "Create notes during a security code review. Import your favorite SAST tool results and collaborate with others.",
   "icon": "resources/security_notes_logo.png",
   "version": "1.0.0",
-  "publisher": "Refactor Security",
+  "publisher": "refactor-security",
   "private": false,
   "license": "MIT",
   "repository": {
