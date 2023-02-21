@@ -36,7 +36,7 @@ Please follow any of the alternatives below:
 
 Security Notes allows the creation of notes within source files, which can be replied to, reacted to using emojis, and assigned statuses such as "TODO", "Vulnerable" and "Not Vulnerable".
 
-![Demo for basic usage](gifs/demo-basic-usage.gif)
+![Demo for basic usage](images/demo-basic-usage.gif)
 
 ## Local database for Comments
 
@@ -52,7 +52,7 @@ First, make sure you have a RethinkDB database instance up and running. Then set
 
 Collaboration mode in action:
 
-![Demo for collaboration](gifs/demo-collaboration.gif)
+![Demo for collaboration](images/demo-collaboration.gif)
 
 ### Setting up the RethinkDB database
 
@@ -66,7 +66,13 @@ Naturally, you will want to collaborate with remote peers. To do so in a secure 
 
 The extension allows you to import the output from SAST tools (currently only [Semgrep](https://semgrep.dev/)) into notes, making the processing of the findings much easier:
 
-![Demo for semgrep import](gifs/demo-semgrep-import.gif)
+![Demo for semgrep import](images/demo-semgrep-import.gif)
+
+## Extension Settings
+
+Various settings for the extension can be configured in VSCode's User Settings page (`CMD+Shift+P` / `Ctrl + Shift + P` -> *Preferences: Open Settings (UI)*):
+
+![Extension Settings](images/settings.png)
 
 ## Contributing
 
