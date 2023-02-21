@@ -93,4 +93,4 @@ Additionally, the code for the note reactions was inspired by [comment-reactions
 
 ## License
 
-Licensed under the MIT License.
+Licensed under the [MIT](LICENSE.md) License.
