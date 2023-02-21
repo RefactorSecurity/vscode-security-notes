@@ -5,7 +5,7 @@
   "icon": "resources/security_notes_logo.png",
   "version": "0.0.1",
   "publisher": "Refactor Security",
-  "private": true,
+  "private": false,
   "license": "MIT",
   "repository": {
     "type": "git",
