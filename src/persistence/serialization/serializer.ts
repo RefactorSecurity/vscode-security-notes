@@ -49,7 +49,7 @@ export class Serializer {
     thread.comments.forEach((comment) => {
       serializedComments.push(this.serializeComment(comment));
     });
-    let uri = fullPathToRelative(thread.uri.path);
+    let uri = fullPathToRelative(thread.uri.fsPath);
     if (isWindows()) {
       uri = pathToPosix(uri);
     }

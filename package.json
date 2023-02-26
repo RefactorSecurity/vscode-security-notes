@@ -3,7 +3,7 @@
   "displayName": "Security Notes",
   "description": "Create notes during a security code review. Import your favorite SAST tool results and collaborate with others.",
   "icon": "resources/security_notes_logo.png",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "refactor-security",
   "private": false,
   "license": "MIT",
