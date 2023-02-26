@@ -5,8 +5,9 @@ import { Serializer } from '../serialization/serializer';
 import { Deserializer } from '../serialization/deserializer';
 import { CommentThread } from 'vscode';
 import { getSetting } from '../../helpers';
+import { getLocalDbFilePath } from '../../utils';
 
-const persistenceFile = getSetting('localDatabase');
+const persistenceFile = getLocalDbFilePath();
 
 export const saveCommentsToFile = (noteList: Map<string, CommentThread>) => {
   fs.writeFileSync(persistenceFile, JSON.stringify(Serializer.serialize(noteList)));

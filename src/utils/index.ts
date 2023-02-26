@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { platform } from 'os';
+import { getSetting } from '../helpers';
 
 export const isWindows = () => {
   return platform() === 'win32';
@@ -18,9 +19,18 @@ export const pathToWin32 = (aPath: string) => {
 
 export const getWorkspacePath = () => {
   if (vscode.workspace.workspaceFolders) {
-    return vscode.workspace.workspaceFolders[0].uri.path;
+    return vscode.workspace.workspaceFolders[0].uri.fsPath;
   } else {
     return '';
+  }
+};
+
+export const getLocalDbFilePath = () => {
+  const localDbFilePath = getSetting('localDatabase');
+  if (path.isAbsolute(localDbFilePath)) {
+    return localDbFilePath;
+  } else {
+    return relativePathToFull(localDbFilePath);
   }
 };
 
