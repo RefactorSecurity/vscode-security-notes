@@ -108,6 +108,9 @@ export function activate(context: vscode.ExtensionContext) {
       'security-notes.deleteNote',
       (thread: vscode.CommentThread) => {
         thread.dispose();
+        if (thread.contextValue) {
+          noteMap.delete(thread.contextValue);
+        }
       },
     ),
   );
