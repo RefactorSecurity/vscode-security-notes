@@ -24,5 +24,6 @@ export class NoteComment implements vscode.Comment {
     } else {
       this.timestamp = new Date();
     }
+    this.contextValue = contextValue;
   }
 }
