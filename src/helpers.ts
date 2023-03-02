@@ -29,7 +29,7 @@ export const saveNoteComment = (
   );
   thread.comments = [...thread.comments, newComment];
   if (firstComment) {
-    updateNoteStatus(newComment, NoteStatus.TODO);
+    updateNoteStatus(newComment, NoteStatus.TODO, true);
     thread.contextValue = uuidv4();
     noteMap.set(thread.contextValue, thread);
   }
@@ -46,7 +46,7 @@ export const setNoteStatus = (
   remoteDb?: RemoteDb,
 ) => {
   // Prepend new status on first note comment
-  updateNoteStatus(thread.comments[0], status);
+  updateNoteStatus(thread.comments[0], status, false);
 
   // Add note comment about status change
   saveNoteComment(
@@ -59,9 +59,21 @@ export const setNoteStatus = (
   );
 };
 
-const updateNoteStatus = (comment: vscode.Comment, status: NoteStatus) => {
-  // Remove previous status if any
-  comment.body = comment.body.toString().replace(/^\[.*\] /, '');
+const updateNoteStatus = (
+  comment: vscode.Comment,
+  status: NoteStatus,
+  firstComment: boolean,
+) => {
+  // Remove previous status if not first comment
+  if (!firstComment) {
+    let removed = false;
+    Object.values(NoteStatus).forEach((noteStatus) => {
+      if (!removed && comment.body.toString().startsWith(`[${noteStatus}] `)) {
+        comment.body = comment.body.toString().slice(noteStatus.length + 3);
+        removed = true;
+      }
+    });
+  }
 
   // Set new status
   comment.body = `[${status}] ${comment.body}`;
