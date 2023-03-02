@@ -7,6 +7,7 @@ import { Resource } from './reactions/resource';
 import { ImportToolResultsWebview } from './webviews/importToolResultsWebview';
 import { commentController } from './controllers/comments';
 import { reactionHandler } from './handlers/reaction';
+import { saveNotesToFileHandler } from './handlers/saveNotesToFile';
 import {
   getSetting,
   saveNoteComment,
@@ -14,7 +15,7 @@ import {
   syncNoteMapWithRemote,
 } from './helpers';
 import { RemoteDb } from './persistence/remote-db';
-import { loadCommentsFromFile, saveCommentsToFile } from './persistence/local-db';
+import { loadNotesFromFile, saveNotesToFile } from './persistence/local-db';
 
 const noteMap = new Map<string, vscode.CommentThread>();
 let remoteDb: RemoteDb | undefined;
@@ -52,6 +53,13 @@ export function activate(context: vscode.ExtensionContext) {
 
   // reaction handler
   commentController.reactionHandler = reactionHandler;
+
+  // save notes to file handler
+  context.subscriptions.push(
+    vscode.commands.registerCommand('security-notes.saveNotesToFile', () =>
+      saveNotesToFileHandler(noteMap),
+    ),
+  );
 
   // create note button
   context.subscriptions.push(
@@ -222,7 +230,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // load persisted comments from file
-  const persistedThreads = loadCommentsFromFile();
+  const persistedThreads = loadNotesFromFile();
   persistedThreads.forEach((thread) => {
     noteMap.set(thread.contextValue ? thread.contextValue : '', thread);
   });
@@ -239,5 +247,5 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate(context: vscode.ExtensionContext) {
   // persist comments in file
-  saveCommentsToFile(noteMap);
+  saveNotesToFile(noteMap);
 }

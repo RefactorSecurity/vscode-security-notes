@@ -76,6 +76,10 @@
       {
         "command": "security-notes.setNoteStatusToDo",
         "title": "Mark as To-Do"
+      },
+      {
+        "command": "security-notes.saveNotesToFile",
+        "title": "Security-Notes: Save Notes to Local Database"
       }
     ],
     "configuration": {
