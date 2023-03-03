@@ -35,7 +35,7 @@ export class Deserializer {
       { name: comment.author },
       parent,
       deserializedReactions,
-      undefined,
+      parent && parent.comments.length ? 'canDelete' : undefined,
       comment.timestamp,
     );
     return newComment;
@@ -61,6 +61,12 @@ export class Deserializer {
       deserializedComments.push(this.deserializeComment(comment, newThread));
     });
     newThread.comments = deserializedComments;
+
+    // mark all comments as deletable, except for the first one
+    newThread.comments
+      .slice(1)
+      .forEach((comment) => (comment.contextValue = 'canDelete'));
+
     return newThread;
   }
 

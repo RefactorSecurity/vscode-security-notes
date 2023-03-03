@@ -109,6 +109,9 @@ export const mergeThread = (local: vscode.CommentThread, remote: any): boolean =
       (a.timestamp ? Number(a.timestamp) : 0) - (b.timestamp ? Number(b.timestamp) : 0),
   );
 
+  // mark all merged comments as deletable, except for the first one
+  mergedComments.slice(1).forEach((comment) => (comment.contextValue = 'canDelete'));
+
   // assigned unique and sorted comments to current thread
   local.comments = mergedComments;
   return merged;
