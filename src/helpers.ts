@@ -60,7 +60,7 @@ export const setNoteStatus = (
 };
 
 const updateNoteStatus = (
-  comment: vscode.Comment,
+  comment: vscode.Comment | any,
   status: NoteStatus,
   firstComment: boolean,
 ) => {
@@ -77,6 +77,7 @@ const updateNoteStatus = (
 
   // Set new status
   comment.body = `[${status}] ${comment.body}`;
+  comment.savedBody = comment.body;
 };
 
 export const mergeThread = (local: vscode.CommentThread, remote: any): boolean => {
