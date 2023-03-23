@@ -29,7 +29,6 @@ export const saveNoteComment = (
   );
   thread.comments = [...thread.comments, newComment];
   if (firstComment) {
-    updateNoteStatus(newComment, NoteStatus.TODO, true);
     thread.contextValue = uuidv4();
     noteMap.set(thread.contextValue, thread);
   }
@@ -45,8 +44,20 @@ export const setNoteStatus = (
   author?: string,
   remoteDb?: RemoteDb,
 ) => {
+  const comment: vscode.Comment | any = thread.comments[0];
+
+  // Remove previous status if any
+  let removed = false;
+  Object.values(NoteStatus).forEach((noteStatus) => {
+    if (!removed && comment.body.toString().startsWith(`[${noteStatus}] `)) {
+      comment.body = comment.body.toString().slice(noteStatus.length + 3);
+      removed = true;
+    }
+  });
+
   // Prepend new status on first note comment
-  updateNoteStatus(thread.comments[0], status, false);
+  comment.body = `[${status}] ${comment.body}`;
+  comment.savedBody = comment.body;
 
   // Add note comment about status change
   saveNoteComment(
@@ -57,27 +68,6 @@ export const setNoteStatus = (
     author ? author : '',
     remoteDb,
   );
-};
-
-const updateNoteStatus = (
-  comment: vscode.Comment | any,
-  status: NoteStatus,
-  firstComment: boolean,
-) => {
-  // Remove previous status if not first comment
-  if (!firstComment) {
-    let removed = false;
-    Object.values(NoteStatus).forEach((noteStatus) => {
-      if (!removed && comment.body.toString().startsWith(`[${noteStatus}] `)) {
-        comment.body = comment.body.toString().slice(noteStatus.length + 3);
-        removed = true;
-      }
-    });
-  }
-
-  // Set new status
-  comment.body = `[${status}] ${comment.body}`;
-  comment.savedBody = comment.body;
 };
 
 export const mergeThread = (local: vscode.CommentThread, remote: any): boolean => {
