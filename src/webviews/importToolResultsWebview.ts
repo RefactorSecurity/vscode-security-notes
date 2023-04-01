@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import { commentController } from '../controllers/comments';
+import { BanditParser } from '../parsers/bandit';
 import { SemgrepParser } from '../parsers/semgrep';
 import { ToolFinding } from '../models/toolFinding';
 import { saveNoteComment } from '../helpers';
@@ -42,12 +43,7 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
         case 'processToolFile': {
-          processToolFile(
-            data.toolName,
-            data.fileContent,
-            this.noteMap,
-            this.remoteDb,
-          );
+          processToolFile(data.toolName, data.fileContent, this.noteMap, this.remoteDb);
         }
       }
     });
@@ -86,6 +82,7 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
             <p>
             <select id="toolSelect">
             <option value="semgrep">semgrep</option>
+            <option value="bandit">bandit</option>
             </select>
             </p>
             <p>Select file:</p>
@@ -113,6 +110,11 @@ function processToolFile(
   switch (toolName) {
     case 'semgrep': {
       toolFindings = SemgrepParser.parse(fileContent);
+      break;
+    }
+    case 'bandit': {
+      toolFindings = BanditParser.parse(fileContent);
+      break;
     }
   }
 

@@ -14,7 +14,10 @@
 
 Security Notes allows the creation of notes within source files, which can be replied to, reacted to using emojis, and assigned statuses such as "TODO", "Vulnerable" and "Not Vulnerable".
 
-Also, it allows importing the output from SAST tools (currently only [Semgrep](https://semgrep.dev/)) into notes, making the processing of the findings much easier.
+Also, it allows importing the output from SAST tools into notes, making the processing of the findings much easier. Currently supported tools include:
+
+- semgrep (https://semgrep.dev/)
+- bandit (https://bandit.readthedocs.io/en/latest/)
 
 Finally, collaborate with others by using a centralized database for notes that will be automatically synced in **real-time**! Create a note locally, and it will be automatically pushed to whoever is working with you on the project.
 
@@ -70,7 +73,7 @@ The extension allows you to import the output from SAST tools (currently only [S
 
 ## Extension Settings
 
-Various settings for the extension can be configured in VSCode's User Settings page (`CMD+Shift+P` / `Ctrl + Shift + P` -> *Preferences: Open Settings (UI)*):
+Various settings for the extension can be configured in VSCode's User Settings page (`CMD+Shift+P` / `Ctrl + Shift + P` -> _Preferences: Open Settings (UI)_):
 
 ![Extension Settings](images/settings.png)
 
