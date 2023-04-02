@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import { ToolFinding } from '../models/toolFinding';
+import { relativePathToFull } from '../utils';
 
 class SemgrepParser {
   static parse(fileContent: string) {
@@ -11,11 +12,7 @@ class SemgrepParser {
       const semgrepFindings = JSON.parse(fileContent).results;
       semgrepFindings.map((semgrepFinding: any) => {
         // uri
-        let fullPath = '';
-        if (vscode.workspace.workspaceFolders) {
-          fullPath = vscode.workspace.workspaceFolders[0].uri.fsPath + '/';
-        }
-        const uri = vscode.Uri.file(`${fullPath}${semgrepFinding.path}`);
+        const uri = vscode.Uri.file(relativePathToFull(semgrepFinding.path));
 
         // range
         const range = new vscode.Range(

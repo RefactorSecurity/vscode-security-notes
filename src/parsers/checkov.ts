@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import { ToolFinding } from '../models/toolFinding';
+import { relativePathToFull } from '../utils';
 
 class CheckovParser {
   static parse(fileContent: string) {
@@ -13,11 +14,7 @@ class CheckovParser {
         const checkovFindings = checkovCheckType.results.failed_checks;
         checkovFindings.map((checkovFinding: any) => {
           // uri
-          let fullPath = '';
-          if (vscode.workspace.workspaceFolders) {
-            fullPath = vscode.workspace.workspaceFolders[0].uri.fsPath + '/';
-          }
-          const uri = vscode.Uri.file(`${fullPath}${checkovFinding.file_path}`);
+          const uri = vscode.Uri.file(relativePathToFull(checkovFinding.file_path));
 
           // range
           const range = new vscode.Range(

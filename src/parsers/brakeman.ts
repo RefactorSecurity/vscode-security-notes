@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import { ToolFinding } from '../models/toolFinding';
+import { relativePathToFull } from '../utils';
 
 class BrakemanParser {
   static parse(fileContent: string) {
@@ -11,11 +12,7 @@ class BrakemanParser {
       const brakemanFindings = JSON.parse(fileContent).warnings;
       brakemanFindings.map((brakemanFinding: any) => {
         // uri
-        let fullPath = '';
-        if (vscode.workspace.workspaceFolders) {
-          fullPath = vscode.workspace.workspaceFolders[0].uri.fsPath + '/';
-        }
-        const uri = vscode.Uri.file(`${fullPath}${brakemanFinding.file}`);
+        const uri = vscode.Uri.file(relativePathToFull(brakemanFinding.file));
 
         // range
         const range = new vscode.Range(

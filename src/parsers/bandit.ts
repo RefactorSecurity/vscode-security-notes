@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import { ToolFinding } from '../models/toolFinding';
+import { relativePathToFull } from '../utils';
 
 class BanditParser {
   static parse(fileContent: string) {
@@ -11,11 +12,7 @@ class BanditParser {
       const banditFindings = JSON.parse(fileContent).results;
       banditFindings.map((banditFinding: any) => {
         // uri
-        let fullPath = '';
-        if (vscode.workspace.workspaceFolders) {
-          fullPath = vscode.workspace.workspaceFolders[0].uri.fsPath + '/';
-        }
-        const uri = vscode.Uri.file(`${fullPath}${banditFinding.filename}`);
+        const uri = vscode.Uri.file(relativePathToFull(banditFinding.filename));
 
         // range
         const lineRange = banditFinding.line_range;
