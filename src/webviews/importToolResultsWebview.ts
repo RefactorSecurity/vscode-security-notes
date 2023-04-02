@@ -5,6 +5,7 @@ import { commentController } from '../controllers/comments';
 import { BanditParser } from '../parsers/bandit';
 import { BrakemanParser } from '../parsers/brakeman';
 import { CheckovParser } from '../parsers/checkov';
+import { GosecParser } from '../parsers/gosec';
 import { SemgrepParser } from '../parsers/semgrep';
 import { ToolFinding } from '../models/toolFinding';
 import { saveNoteComment } from '../helpers';
@@ -86,6 +87,7 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
             <option value="bandit">bandit (JSON)</option>
             <option value="brakeman">brakeman (JSON)</option>
             <option value="checkov">checkov (JSON)</option>
+            <option value="gosec">gosec (JSON)</option>
             <option value="semgrep">semgrep (JSON)</option>
             </select>
             </p>
@@ -122,6 +124,10 @@ function processToolFile(
     }
     case 'checkov': {
       toolFindings = CheckovParser.parse(fileContent);
+      break;
+    }
+    case 'gosec': {
+      toolFindings = GosecParser.parse(fileContent);
       break;
     }
     case 'semgrep': {

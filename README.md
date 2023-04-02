@@ -70,10 +70,11 @@ The extension allows you to import the output from SAST tools into notes, making
 
 Currently supported tools include:
 
-- semgrep (https://semgrep.dev/)
 - bandit (https://bandit.readthedocs.io/en/latest/)
 - brakeman (https://brakemanscanner.org/)
 - checkov (https://www.checkov.io/)
+- gosec (https://github.com/securego/gosec)
+- semgrep (https://semgrep.dev/)
 
 ## Extension Settings
 
