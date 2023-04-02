@@ -83,10 +83,10 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
             <p>Select tool:</p>
             <p>
             <select id="toolSelect">
-            <option value="bandit">bandit</option>
-            <option value="brakeman">brakeman</option>
-            <option value="checkov">checkov</option>
-            <option value="semgrep">semgrep</option>
+            <option value="bandit">bandit (JSON)</option>
+            <option value="brakeman">brakeman (JSON)</option>
+            <option value="checkov">checkov (JSON)</option>
+            <option value="semgrep">semgrep (JSON)</option>
             </select>
             </p>
             <p>Select file:</p>
