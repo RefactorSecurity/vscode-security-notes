@@ -73,6 +73,7 @@ Currently supported tools include:
 - semgrep (https://semgrep.dev/)
 - bandit (https://bandit.readthedocs.io/en/latest/)
 - brakeman (https://brakemanscanner.org/)
+- checkov (https://www.checkov.io/)
 
 ## Extension Settings
 

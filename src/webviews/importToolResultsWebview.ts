@@ -3,8 +3,9 @@
 import * as vscode from 'vscode';
 import { commentController } from '../controllers/comments';
 import { BanditParser } from '../parsers/bandit';
-import { SemgrepParser } from '../parsers/semgrep';
 import { BrakemanParser } from '../parsers/brakeman';
+import { CheckovParser } from '../parsers/checkov';
+import { SemgrepParser } from '../parsers/semgrep';
 import { ToolFinding } from '../models/toolFinding';
 import { saveNoteComment } from '../helpers';
 import { RemoteDb } from '../persistence/remote-db';
@@ -82,9 +83,10 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
             <p>Select tool:</p>
             <p>
             <select id="toolSelect">
-            <option value="semgrep">semgrep</option>
             <option value="bandit">bandit</option>
             <option value="brakeman">brakeman</option>
+            <option value="checkov">checkov</option>
+            <option value="semgrep">semgrep</option>
             </select>
             </p>
             <p>Select file:</p>
@@ -110,16 +112,20 @@ function processToolFile(
 
   // parse tool findings
   switch (toolName) {
-    case 'semgrep': {
-      toolFindings = SemgrepParser.parse(fileContent);
-      break;
-    }
     case 'bandit': {
       toolFindings = BanditParser.parse(fileContent);
       break;
     }
     case 'brakeman': {
       toolFindings = BrakemanParser.parse(fileContent);
+      break;
+    }
+    case 'checkov': {
+      toolFindings = CheckovParser.parse(fileContent);
+      break;
+    }
+    case 'semgrep': {
+      toolFindings = SemgrepParser.parse(fileContent);
       break;
     }
   }
