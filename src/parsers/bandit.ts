@@ -4,26 +4,27 @@ import * as vscode from 'vscode';
 import { ToolFinding } from '../models/toolFinding';
 import { relativePathToFull } from '../utils';
 
-class SemgrepParser {
+class BanditParser {
   static parse(fileContent: string) {
     const toolFindings: ToolFinding[] = [];
 
     try {
-      const semgrepFindings = JSON.parse(fileContent).results;
-      semgrepFindings.map((semgrepFinding: any) => {
+      const banditFindings = JSON.parse(fileContent).results;
+      banditFindings.map((banditFinding: any) => {
         // uri
-        const uri = vscode.Uri.file(relativePathToFull(semgrepFinding.path));
+        const uri = vscode.Uri.file(relativePathToFull(banditFinding.filename));
 
         // range
+        const lineRange = banditFinding.line_range;
         const range = new vscode.Range(
-          semgrepFinding.start.line - 1,
+          lineRange[0] - 1,
           0,
-          semgrepFinding.end.line - 1,
+          (lineRange[1] ? lineRange[1] : lineRange[0]) - 1,
           0,
         );
 
         // instantiate tool finding and add to list
-        const toolFinding = new ToolFinding(uri, range, semgrepFinding.extra.message);
+        const toolFinding = new ToolFinding(uri, range, banditFinding.issue_text);
         toolFindings.push(toolFinding);
       });
     } catch {
@@ -34,4 +35,4 @@ class SemgrepParser {
   }
 }
 
-export { SemgrepParser };
+export { BanditParser };

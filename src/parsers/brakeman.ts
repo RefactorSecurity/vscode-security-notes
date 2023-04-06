@@ -4,26 +4,30 @@ import * as vscode from 'vscode';
 import { ToolFinding } from '../models/toolFinding';
 import { relativePathToFull } from '../utils';
 
-class SemgrepParser {
+class BrakemanParser {
   static parse(fileContent: string) {
     const toolFindings: ToolFinding[] = [];
 
     try {
-      const semgrepFindings = JSON.parse(fileContent).results;
-      semgrepFindings.map((semgrepFinding: any) => {
+      const brakemanFindings = JSON.parse(fileContent).warnings;
+      brakemanFindings.map((brakemanFinding: any) => {
         // uri
-        const uri = vscode.Uri.file(relativePathToFull(semgrepFinding.path));
+        const uri = vscode.Uri.file(relativePathToFull(brakemanFinding.file));
 
         // range
         const range = new vscode.Range(
-          semgrepFinding.start.line - 1,
+          brakemanFinding.line - 1,
           0,
-          semgrepFinding.end.line - 1,
+          brakemanFinding.line - 1,
           0,
         );
 
         // instantiate tool finding and add to list
-        const toolFinding = new ToolFinding(uri, range, semgrepFinding.extra.message);
+        const toolFinding = new ToolFinding(
+          uri,
+          range,
+          `${brakemanFinding.warning_type}: ${brakemanFinding.message}`,
+        );
         toolFindings.push(toolFinding);
       });
     } catch {
@@ -34,4 +38,4 @@ class SemgrepParser {
   }
 }
 
-export { SemgrepParser };
+export { BrakemanParser };

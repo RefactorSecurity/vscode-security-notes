@@ -2,6 +2,10 @@
 
 import * as vscode from 'vscode';
 import { commentController } from '../controllers/comments';
+import { BanditParser } from '../parsers/bandit';
+import { BrakemanParser } from '../parsers/brakeman';
+import { CheckovParser } from '../parsers/checkov';
+import { GosecParser } from '../parsers/gosec';
 import { SemgrepParser } from '../parsers/semgrep';
 import { ToolFinding } from '../models/toolFinding';
 import { saveNoteComment } from '../helpers';
@@ -42,12 +46,7 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
         case 'processToolFile': {
-          processToolFile(
-            data.toolName,
-            data.fileContent,
-            this.noteMap,
-            this.remoteDb,
-          );
+          processToolFile(data.toolName, data.fileContent, this.noteMap, this.remoteDb);
         }
       }
     });
@@ -85,7 +84,11 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
             <p>Select tool:</p>
             <p>
             <select id="toolSelect">
-            <option value="semgrep">semgrep</option>
+            <option value="bandit">bandit (JSON)</option>
+            <option value="brakeman">brakeman (JSON)</option>
+            <option value="checkov">checkov (JSON)</option>
+            <option value="gosec">gosec (JSON)</option>
+            <option value="semgrep">semgrep (JSON)</option>
             </select>
             </p>
             <p>Select file:</p>
@@ -111,8 +114,25 @@ function processToolFile(
 
   // parse tool findings
   switch (toolName) {
+    case 'bandit': {
+      toolFindings = BanditParser.parse(fileContent);
+      break;
+    }
+    case 'brakeman': {
+      toolFindings = BrakemanParser.parse(fileContent);
+      break;
+    }
+    case 'checkov': {
+      toolFindings = CheckovParser.parse(fileContent);
+      break;
+    }
+    case 'gosec': {
+      toolFindings = GosecParser.parse(fileContent);
+      break;
+    }
     case 'semgrep': {
       toolFindings = SemgrepParser.parse(fileContent);
+      break;
     }
   }
 

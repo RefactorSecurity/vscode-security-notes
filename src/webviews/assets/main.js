@@ -11,7 +11,7 @@
 
   function onButtonClicked() {
     let toolSelect = document.getElementById('toolSelect');
-    let toolName = toolSelect.options[toolSelect.selectedIndex].text;
+    let toolName = toolSelect.options[toolSelect.selectedIndex].value;
 
     let selectedFile = document.getElementById('fileInput').files[0];
     readFile(selectedFile).then((fileContent) => {
