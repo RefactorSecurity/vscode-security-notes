@@ -76,6 +76,21 @@ Currently supported tools include:
 - gosec (https://github.com/securego/gosec)
 - semgrep (https://semgrep.dev/)
 
+For imports to be successful, we recommend running commands as follows (exporting results as JSON), and making sure to run these tools from the project's folder (so that all relative paths can be processed correctly):
+
+```bash
+# bandit
+bandit -f json -o bandit-results.json -r .
+# brakeman
+brakeman -f json -o brakeman-results.json .
+# checkov
+checkov -d . -o json --output-file-path checkov-results.json
+# gosec
+gosec -fmt=json -out=gosec-results.json ./...
+# semgrep
+semgrep scan --json -o semgrep-results.json --config=auto .
+```
+
 ## Extension Settings
 
 Various settings for the extension can be configured in VSCode's User Settings page (`CMD+Shift+P` / `Ctrl + Shift + P` -> _Preferences: Open Settings (UI)_):
