@@ -1,15 +1,15 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { commentController } from '../controllers/comments';
-import { BanditParser } from '../parsers/bandit';
-import { BrakemanParser } from '../parsers/brakeman';
-import { CheckovParser } from '../parsers/checkov';
-import { GosecParser } from '../parsers/gosec';
-import { SemgrepParser } from '../parsers/semgrep';
-import { ToolFinding } from '../models/toolFinding';
-import { saveNoteComment } from '../helpers';
-import { RemoteDb } from '../persistence/remote-db';
+import { commentController } from '../../controllers/comments';
+import { BanditParser } from '../../parsers/bandit';
+import { BrakemanParser } from '../../parsers/brakeman';
+import { CheckovParser } from '../../parsers/checkov';
+import { GosecParser } from '../../parsers/gosec';
+import { SemgrepParser } from '../../parsers/semgrep';
+import { ToolFinding } from '../../models/toolFinding';
+import { saveNoteComment } from '../../helpers';
+import { RemoteDb } from '../../persistence/remote-db';
 
 export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
   public static readonly viewType = 'import-tool-results-view';
@@ -54,7 +54,13 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'assets', 'main.js'),
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        'src',
+        'webviews',
+        'assets',
+        'importToolResults.js',
+      ),
     );
     const styleResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'assets', 'reset.css'),

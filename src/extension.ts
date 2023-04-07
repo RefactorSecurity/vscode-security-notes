@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { NoteStatus } from './models/noteStatus';
 import { NoteComment } from './models/noteComment';
 import { Resource } from './reactions/resource';
-import { ImportToolResultsWebview } from './webviews/importToolResultsWebview';
+import { ImportToolResultsWebview } from './webviews/import-tool-results/importToolResultsWebview';
 import { commentController } from './controllers/comments';
 import { reactionHandler } from './handlers/reaction';
 import { saveNotesToFileHandler } from './handlers/saveNotesToFile';
