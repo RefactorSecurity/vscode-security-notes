@@ -37,7 +37,6 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
     webviewView.webview.options = {
       // Allow scripts in the webview
       enableScripts: true,
-
       localResourceRoots: [this._extensionUri],
     };
 
@@ -89,21 +88,26 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
 				  <body>
             <p>Select tool:</p>
             <p>
-            <select id="toolSelect">
-            <option value="bandit">bandit (JSON)</option>
-            <option value="brakeman">brakeman (JSON)</option>
-            <option value="checkov">checkov (JSON)</option>
-            <option value="gosec">gosec (JSON)</option>
-            <option value="semgrep">semgrep (JSON)</option>
-            </select>
+              <select id="toolSelect">
+                <option value="bandit">bandit (JSON)</option>
+                <option value="brakeman">brakeman (JSON)</option>
+                <option value="checkov">checkov (JSON)</option>
+                <option value="gosec">gosec (JSON)</option>
+                <option value="semgrep">semgrep (JSON)</option>
+              </select>
             </p>
+            </br>
+
             <p>Select file:</p>
             <p>
-            <input class=".color-input" type="file" id="fileInput"></input>
+              <input class=".color-input" type="file" id="fileInput"></input>
             </p>
+            </br>
+
             <p>
-            <button class="process-file-button">Import</button>
+              <button class="process-file-button">Import</button>
             </p>
+
             <script src="${scriptUri}"></script>
 				  </body>
 			  </html>`;

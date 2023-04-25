@@ -233,6 +233,11 @@
           "type": "webview",
           "name": "Import Tool Results",
           "id": "import-tool-results-view"
+        },
+        {
+          "type": "webview",
+          "name": "Export Notes",
+          "id": "export-notes-view"
         }
       ]
     },
