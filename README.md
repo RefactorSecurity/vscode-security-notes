@@ -91,6 +91,10 @@ gosec -fmt=json -out=gosec-results.json ./...
 semgrep scan --json -o semgrep-results.json --config=auto .
 ```
 
+## Exporting notes in popular formats
+
+Currently we only support exporting notes to Markdown, but other formats such as HTML are coming soon.
+
 ## Extension Settings
 
 Various settings for the extension can be configured in VSCode's User Settings page (`CMD+Shift+P` / `Ctrl + Shift + P` -> _Preferences: Open Settings (UI)_):

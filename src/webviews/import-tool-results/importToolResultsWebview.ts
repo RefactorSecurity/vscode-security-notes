@@ -1,15 +1,15 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { commentController } from '../controllers/comments';
-import { BanditParser } from '../parsers/bandit';
-import { BrakemanParser } from '../parsers/brakeman';
-import { CheckovParser } from '../parsers/checkov';
-import { GosecParser } from '../parsers/gosec';
-import { SemgrepParser } from '../parsers/semgrep';
-import { ToolFinding } from '../models/toolFinding';
-import { saveNoteComment } from '../helpers';
-import { RemoteDb } from '../persistence/remote-db';
+import { commentController } from '../../controllers/comments';
+import { BanditParser } from '../../parsers/bandit';
+import { BrakemanParser } from '../../parsers/brakeman';
+import { CheckovParser } from '../../parsers/checkov';
+import { GosecParser } from '../../parsers/gosec';
+import { SemgrepParser } from '../../parsers/semgrep';
+import { ToolFinding } from '../../models/toolFinding';
+import { saveNoteComment } from '../../helpers';
+import { RemoteDb } from '../../persistence/remote-db';
 
 export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
   public static readonly viewType = 'import-tool-results-view';
@@ -37,7 +37,6 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
     webviewView.webview.options = {
       // Allow scripts in the webview
       enableScripts: true,
-
       localResourceRoots: [this._extensionUri],
     };
 
@@ -54,7 +53,13 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'assets', 'main.js'),
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        'src',
+        'webviews',
+        'assets',
+        'importToolResults.js',
+      ),
     );
     const styleResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'assets', 'reset.css'),
@@ -83,21 +88,26 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
 				  <body>
             <p>Select tool:</p>
             <p>
-            <select id="toolSelect">
-            <option value="bandit">bandit (JSON)</option>
-            <option value="brakeman">brakeman (JSON)</option>
-            <option value="checkov">checkov (JSON)</option>
-            <option value="gosec">gosec (JSON)</option>
-            <option value="semgrep">semgrep (JSON)</option>
-            </select>
+              <select id="toolSelect">
+                <option value="bandit">bandit (JSON)</option>
+                <option value="brakeman">brakeman (JSON)</option>
+                <option value="checkov">checkov (JSON)</option>
+                <option value="gosec">gosec (JSON)</option>
+                <option value="semgrep">semgrep (JSON)</option>
+              </select>
             </p>
+            </br>
+
             <p>Select file:</p>
             <p>
-            <input class=".color-input" type="file" id="fileInput"></input>
+              <input class=".color-input" type="file" id="fileInput"></input>
             </p>
+            </br>
+
             <p>
-            <button class="process-file-button">Import</button>
+              <button class="process-file-button">Import</button>
             </p>
+
             <script src="${scriptUri}"></script>
 				  </body>
 			  </html>`;
@@ -137,14 +147,16 @@ function processToolFile(
   }
 
   if (!toolFindings.length) {
-    vscode.window.showErrorMessage('An error has ocurred while parsing the file.');
+    vscode.window.showErrorMessage(
+      '[Import] An error has ocurred while parsing the file.',
+    );
     return;
   }
 
   if (noteMap.size && identifyPotentialDuplicates(toolName, noteMap)) {
     vscode.window
       .showWarningMessage(
-        `Potential duplicates. Current comments already include findings from ${toolName}. Do you want to import findings anyway?`,
+        `[Import] Potential duplicates. Current comments already include findings from ${toolName}. Do you want to import findings anyway?`,
         'Yes',
         'No',
       )
@@ -184,6 +196,6 @@ function saveToolFindings(
     saveNoteComment(newThread, toolFinding.text, true, noteMap, toolName, remoteDb);
   });
   vscode.window.showInformationMessage(
-    `${toolFindings.length} findings were imported successfully.`,
+    `[Import] ${toolFindings.length} findings were imported successfully.`,
   );
 }

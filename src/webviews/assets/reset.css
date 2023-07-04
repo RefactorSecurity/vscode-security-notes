@@ -16,7 +16,6 @@ h3,
 h4,
 h5,
 h6,
-p,
 ol,
 ul {
 	margin: 0;
@@ -27,4 +26,9 @@ ul {
 img {
 	max-width: 100%;
 	height: auto;
+}
+
+p {
+	line-height: 25px;   /* within paragraph */
+	font-weight: normal;
 }
