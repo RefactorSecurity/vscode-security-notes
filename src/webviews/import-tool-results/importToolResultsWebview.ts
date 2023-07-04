@@ -147,14 +147,16 @@ function processToolFile(
   }
 
   if (!toolFindings.length) {
-    vscode.window.showErrorMessage('An error has ocurred while parsing the file.');
+    vscode.window.showErrorMessage(
+      '[Import] An error has ocurred while parsing the file.',
+    );
     return;
   }
 
   if (noteMap.size && identifyPotentialDuplicates(toolName, noteMap)) {
     vscode.window
       .showWarningMessage(
-        `Potential duplicates. Current comments already include findings from ${toolName}. Do you want to import findings anyway?`,
+        `[Import] Potential duplicates. Current comments already include findings from ${toolName}. Do you want to import findings anyway?`,
         'Yes',
         'No',
       )
@@ -194,6 +196,6 @@ function saveToolFindings(
     saveNoteComment(newThread, toolFinding.text, true, noteMap, toolName, remoteDb);
   });
   vscode.window.showInformationMessage(
-    `${toolFindings.length} findings were imported successfully.`,
+    `[Import] ${toolFindings.length} findings were imported successfully.`,
   );
 }
