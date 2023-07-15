@@ -9,6 +9,10 @@ import { getLocalDbFilePath } from '../../utils';
 const persistenceFile = getLocalDbFilePath();
 
 export const saveNotesToFile = (noteMap: Map<string, CommentThread>) => {
+  // Avoid creating persistence file if no notes were created
+  if (!fs.existsSync(persistenceFile) && !noteMap.size) {
+    return;
+  }
   fs.writeFileSync(persistenceFile, JSON.stringify(Serializer.serialize(noteMap)));
 };
 
