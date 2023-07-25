@@ -10,6 +10,7 @@ import { SemgrepParser } from '../../parsers/semgrep';
 import { ToolFinding } from '../../models/toolFinding';
 import { saveNoteComment } from '../../helpers';
 import { RemoteDb } from '../../persistence/remote-db';
+import { SarifParser } from '../../parsers/sarif';
 
 export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
   public static readonly viewType = 'import-tool-results-view';
@@ -93,6 +94,7 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
                 <option value="brakeman">brakeman (JSON)</option>
                 <option value="checkov">checkov (JSON)</option>
                 <option value="gosec">gosec (JSON)</option>
+                <option value="sarif">SARIF 2.1.0</option>
                 <option value="semgrep">semgrep (JSON)</option>
               </select>
             </p>
@@ -138,6 +140,10 @@ function processToolFile(
     }
     case 'gosec': {
       toolFindings = GosecParser.parse(fileContent);
+      break;
+    }
+    case 'sarif': {
+      toolFindings = SarifParser.parse(fileContent);
       break;
     }
     case 'semgrep': {
