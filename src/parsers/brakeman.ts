@@ -27,6 +27,7 @@ class BrakemanParser {
           uri,
           range,
           `${brakemanFinding.warning_type}: ${brakemanFinding.message}`,
+          'brakeman',
         );
         toolFindings.push(toolFinding);
       });

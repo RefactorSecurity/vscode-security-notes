@@ -25,7 +25,12 @@ class CheckovParser {
           );
 
           // instantiate tool finding and add to list
-          const toolFinding = new ToolFinding(uri, range, checkovFinding.check_name);
+          const toolFinding = new ToolFinding(
+            uri,
+            range,
+            checkovFinding.check_name,
+            'checkov',
+          );
           toolFindings.push(toolFinding);
         });
       });

@@ -23,7 +23,12 @@ class SemgrepParser {
         );
 
         // instantiate tool finding and add to list
-        const toolFinding = new ToolFinding(uri, range, semgrepFinding.extra.message);
+        const toolFinding = new ToolFinding(
+          uri,
+          range,
+          semgrepFinding.extra.message,
+          'semgrep',
+        );
         toolFindings.push(toolFinding);
       });
     } catch {

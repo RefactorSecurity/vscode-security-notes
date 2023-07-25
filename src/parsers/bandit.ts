@@ -24,7 +24,12 @@ class BanditParser {
         );
 
         // instantiate tool finding and add to list
-        const toolFinding = new ToolFinding(uri, range, banditFinding.issue_text);
+        const toolFinding = new ToolFinding(
+          uri,
+          range,
+          banditFinding.issue_text,
+          'bandit',
+        );
         toolFindings.push(toolFinding);
       });
     } catch {

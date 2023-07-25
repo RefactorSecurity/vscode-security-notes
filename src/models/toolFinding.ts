@@ -7,6 +7,7 @@ class ToolFinding {
     public uri: vscode.Uri,
     public range: vscode.Range,
     public text: string,
+    public tool: string,
   ) {}
 }
 

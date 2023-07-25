@@ -18,7 +18,7 @@ class GosecParser {
         const range = new vscode.Range(line - 1, 0, line - 1, 0);
 
         // instantiate tool finding and add to list
-        const toolFinding = new ToolFinding(uri, range, gosecFinding.details);
+        const toolFinding = new ToolFinding(uri, range, gosecFinding.details, 'gosec');
         toolFindings.push(toolFinding);
       });
     } catch {

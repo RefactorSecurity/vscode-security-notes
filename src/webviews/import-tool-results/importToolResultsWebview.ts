@@ -153,7 +153,7 @@ function processToolFile(
     return;
   }
 
-  if (noteMap.size && identifyPotentialDuplicates(toolName, noteMap)) {
+  if (noteMap.size && identifyPotentialDuplicates(toolFindings, noteMap)) {
     vscode.window
       .showWarningMessage(
         `[Import] Potential duplicates. Current comments already include findings from ${toolName}. Do you want to import findings anyway?`,
@@ -171,7 +171,7 @@ function processToolFile(
 }
 
 function identifyPotentialDuplicates(
-  toolName: string,
+  toolFindings: ToolFinding[],
   noteMap: Map<string, vscode.CommentThread>,
 ) {
   // return noteList.some((thread) => {
@@ -193,7 +193,14 @@ function saveToolFindings(
       toolFinding.range,
       [],
     );
-    saveNoteComment(newThread, toolFinding.text, true, noteMap, toolName, remoteDb);
+    saveNoteComment(
+      newThread,
+      toolFinding.text,
+      true,
+      noteMap,
+      toolFinding.tool,
+      remoteDb,
+    );
   });
   vscode.window.showInformationMessage(
     `[Import] ${toolFindings.length} findings were imported successfully.`,
