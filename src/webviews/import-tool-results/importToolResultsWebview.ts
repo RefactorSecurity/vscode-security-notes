@@ -168,11 +168,11 @@ function processToolFile(
       )
       .then((answer) => {
         if (answer === 'Yes') {
-          saveToolFindings(toolFindings, noteMap, toolName, remoteDb);
+          saveToolFindings(toolFindings, noteMap, remoteDb);
         }
       });
   } else {
-    saveToolFindings(toolFindings, noteMap, toolName, remoteDb);
+    saveToolFindings(toolFindings, noteMap, remoteDb);
   }
 }
 
@@ -189,7 +189,6 @@ function identifyPotentialDuplicates(
 function saveToolFindings(
   toolFindings: ToolFinding[],
   noteMap: Map<string, vscode.CommentThread>,
-  toolName: string,
   remoteDb: RemoteDb | undefined,
 ) {
   // instantiate comments based on parsed tool findings
