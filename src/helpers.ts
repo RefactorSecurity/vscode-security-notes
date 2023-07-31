@@ -117,9 +117,11 @@ export const syncNoteMapWithRemote = (
     const threadId = remoteSerializedThread.id;
     // if remote thread doesn't exist in local map, add it to local
     if (!noteMap.has(threadId)) {
-      const remoteThread: vscode.CommentThread =
+      const remoteThread: vscode.CommentThread | undefined =
         Deserializer.deserializeThread(remoteSerializedThread);
-      noteMap.set(threadId, remoteThread);
+      if (remoteThread) {
+        noteMap.set(threadId, remoteThread);
+      }
       return;
     }
 

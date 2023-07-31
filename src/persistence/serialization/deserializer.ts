@@ -1,6 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { CommentReaction, CommentThread, Range } from 'vscode';
 import { NoteComment } from '../../models/noteComment';
 import { commentController } from '../../controllers/comments';
@@ -45,11 +46,16 @@ export class Deserializer {
     return new Range(range.startLine, 0, range.endLine, 0);
   }
 
-  static deserializeThread(thread: any): CommentThread {
+  static deserializeThread(thread: any): CommentThread | undefined {
     let uri = relativePathToFull(thread.uri);
     if (isWindows()) {
       uri = pathToWin32(uri);
     }
+    // ignore thread if uri is invalid
+    if (!fs.existsSync(uri)) {
+      return;
+    }
+
     const newThread = commentController.createCommentThread(
       vscode.Uri.file(uri),
       this.deserializeRange(thread.range),
@@ -73,7 +79,10 @@ export class Deserializer {
   public static deserialize(deserializednoteList: any[]): CommentThread[] {
     const deserializedCommentThreads: CommentThread[] = [];
     deserializednoteList.forEach((thread) => {
-      deserializedCommentThreads.push(this.deserializeThread(thread));
+      const newThread: vscode.CommentThread | undefined = this.deserializeThread(thread);
+      if (newThread) {
+        deserializedCommentThreads.push();
+      }
     });
     return deserializedCommentThreads;
   }

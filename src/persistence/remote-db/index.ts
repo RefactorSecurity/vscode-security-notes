@@ -127,14 +127,16 @@ export class RemoteDb {
             return;
           }
           this.noteMap.get(row.new_val.id)?.dispose();
-          const newThread: vscode.CommentThread = Deserializer.deserializeThread(
+          const newThread: vscode.CommentThread | undefined = Deserializer.deserializeThread(
             row.new_val,
           );
-          this.noteMap.set(
-            newThread.contextValue ? newThread.contextValue : '',
-            newThread,
-          );
-          vscode.window.showInformationMessage('Note received from remote DB.');
+          if (newThread) {
+            this.noteMap.set(
+              newThread.contextValue ? newThread.contextValue : '',
+              newThread,
+            );
+            vscode.window.showInformationMessage('Note received from remote DB.');
+          }
         });
       });
   }
