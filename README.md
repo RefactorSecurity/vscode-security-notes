@@ -70,11 +70,12 @@ The extension allows you to import the output from SAST tools into notes, making
 
 Currently supported tools include:
 
-- bandit (https://bandit.readthedocs.io/en/latest/)
-- brakeman (https://brakemanscanner.org/)
-- checkov (https://www.checkov.io/)
-- gosec (https://github.com/securego/gosec)
-- semgrep (https://semgrep.dev/)
+- [bandit](https://bandit.readthedocs.io/en/latest/)
+- [brakeman](https://brakemanscanner.org/)
+- [checkov](https://www.checkov.io/)
+- [gosec](https://github.com/securego/gosec)
+- [semgrep](https://semgrep.dev/)
+- any tool that supports [SARIF v2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) JSON output
 
 For imports to be successful, we recommend running commands as follows (exporting results as JSON), and making sure to run these tools from the project's folder (so that all relative paths can be processed correctly):
 
