@@ -7,6 +7,7 @@ import { Resource } from './reactions/resource';
 import { ImportToolResultsWebview } from './webviews/import-tool-results/importToolResultsWebview';
 import { ExportNotesWebview } from './webviews/export-notes/exportNotesWebview';
 import { commentController } from './controllers/comments';
+import { breadcrumbsController } from './controllers/breadcrumbs';
 import { reactionHandler } from './handlers/reaction';
 import { saveNotesToFileHandler } from './handlers/saveNotesToFile';
 import {
@@ -17,6 +18,10 @@ import {
 } from './helpers';
 import { RemoteDb } from './persistence/remote-db';
 import { loadNotesFromFile, saveNotesToFile } from './persistence/local-db';
+import { BreadcrumbsSidebarWebview } from './webviews/breadcrumbs/breadcrumbsSidebarWebview';
+import { BreadcrumbsWebview } from './webviews/breadcrumbs/breadcrumbsWebview';
+import { updateBreadcrumbDecorations } from './decorations/breadcrumbDecoration';
+import { loadBreadcrumbsFromFile, saveBreadcrumbsToFile } from './persistence/breadcrumbs-persistence';
 
 const noteMap = new Map<string, vscode.CommentThread>();
 let remoteDb: RemoteDb | undefined;
@@ -256,9 +261,192 @@ export function activate(context: vscode.ExtensionContext) {
       });
     }
   }, 1500);
+
+  // BREADCRUMBS FEATURE
+  // Load persisted breadcrumbs from file
+  const breadcrumbsMap = loadBreadcrumbsFromFile();
+  breadcrumbsMap.forEach((breadcrumb, id) => {
+    // Add each loaded breadcrumb to the controller
+    breadcrumbsController['breadcrumbs'].set(id, breadcrumb);
+  });
+
+  // Add command to create a new breadcrumb
+  context.subscriptions.push(
+    vscode.commands.registerCommand('security-notes.createBreadcrumb', async () => {
+      const label = await vscode.window.showInputBox({
+        prompt: 'Enter a label for this breadcrumb trail',
+        placeHolder: 'e.g., Authentication Flow'
+      });
+
+      if (label) {
+        breadcrumbsController.createBreadcrumb(label);
+        breadcrumbsSidebarWebview.refreshWebview();
+        saveBreadcrumbsToFile(breadcrumbsController['breadcrumbs']);
+      }
+    })
+  );
+
+  // Add command to add a point to a breadcrumb
+  context.subscriptions.push(
+    vscode.commands.registerCommand('security-notes.addBreadcrumbPoint', async () => {
+      const breadcrumbs = breadcrumbsController.getAllBreadcrumbs();
+      if (breadcrumbs.length === 0) {
+        const createNew = await vscode.window.showInformationMessage(
+          'No breadcrumbs found. Create a new one?',
+          'Yes', 'No'
+        );
+        
+        if (createNew === 'Yes') {
+          vscode.commands.executeCommand('security-notes.createBreadcrumb');
+        }
+        return;
+      }
+
+      const breadcrumbLabels = breadcrumbs.map(b => ({ 
+        label: b.label, 
+        description: `(${b.points.length} points)`,
+        breadcrumb: b
+      }));
+      
+      const selectedBreadcrumb = await vscode.window.showQuickPick(breadcrumbLabels, {
+        placeHolder: 'Select a breadcrumb to add a point to'
+      });
+
+      if (!selectedBreadcrumb) {
+        return;
+      }
+
+      const tag = await vscode.window.showInputBox({
+        prompt: 'Enter a tag for this breadcrumb point',
+        placeHolder: 'e.g., User Input, API Call'
+      });
+
+      if (!tag) {
+        return;
+      }
+
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showErrorMessage('No active editor');
+        return;
+      }
+
+      const selection = editor.selection;
+      if (selection.isEmpty) {
+        vscode.window.showErrorMessage('Please select some code to mark as a breadcrumb point');
+        return;
+      }
+
+      breadcrumbsController.addPointToBreadcrumb(
+        selectedBreadcrumb.breadcrumb.id,
+        tag,
+        selection,
+        editor.document.uri
+      );
+
+      breadcrumbsSidebarWebview.refreshWebview();
+      saveBreadcrumbsToFile(breadcrumbsController['breadcrumbs']);
+      
+      // Update decorations in the editor
+      updateBreadcrumbDecorations(
+        editor,
+        breadcrumbsController.getPointsForBreadcrumb(selectedBreadcrumb.breadcrumb.id)
+      );
+    })
+  );
+
+  // Add command to follow a breadcrumb
+  context.subscriptions.push(
+    vscode.commands.registerCommand('security-notes.followBreadcrumb', async () => {
+      const breadcrumbs = breadcrumbsController.getAllBreadcrumbs();
+      if (breadcrumbs.length === 0) {
+        vscode.window.showInformationMessage('No breadcrumbs found');
+        return;
+      }
+
+      const breadcrumbLabels = breadcrumbs.map(b => ({ 
+        label: b.label, 
+        description: `(${b.points.length} points)`,
+        breadcrumb: b
+      }));
+      
+      const selectedBreadcrumb = await vscode.window.showQuickPick(breadcrumbLabels, {
+        placeHolder: 'Select a breadcrumb to follow'
+      });
+
+      if (!selectedBreadcrumb || selectedBreadcrumb.breadcrumb.points.length === 0) {
+        return;
+      }
+
+      // Open the main breadcrumbs panel to navigate through points
+      new BreadcrumbsWebview(
+        context.extensionUri,
+        breadcrumbsController['breadcrumbs'],
+        (label) => {
+          breadcrumbsController.createBreadcrumb(label);
+          breadcrumbsSidebarWebview.refreshWebview();
+          saveBreadcrumbsToFile(breadcrumbsController['breadcrumbs']);
+        },
+        (id) => {
+          breadcrumbsController.deleteBreadcrumb(id);
+          breadcrumbsSidebarWebview.refreshWebview();
+          saveBreadcrumbsToFile(breadcrumbsController['breadcrumbs']);
+        },
+        (uri, range) => {
+          vscode.workspace.openTextDocument(uri).then(doc => {
+            vscode.window.showTextDocument(doc).then(editor => {
+              editor.selection = new vscode.Selection(range.start, range.end);
+              editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+            });
+          });
+        }
+      );
+    })
+  );
+
+  // Add command to save breadcrumbs to file
+  context.subscriptions.push(
+    vscode.commands.registerCommand('security-notes.saveBreadcrumbsToFile', () => {
+      saveBreadcrumbsToFile(breadcrumbsController['breadcrumbs']);
+    })
+  );
+
+  // Create and register the breadcrumbs sidebar webview
+  const breadcrumbsSidebarWebview = new BreadcrumbsSidebarWebview(
+    context.extensionUri,
+    breadcrumbsController['breadcrumbs']
+  );
+  
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      BreadcrumbsSidebarWebview.viewType,
+      breadcrumbsSidebarWebview
+    )
+  );
+  
+  // Update breadcrumb decorations when editor changes
+  vscode.window.onDidChangeActiveTextEditor(editor => {
+    if (editor) {
+      const allPoints = Array.from(breadcrumbsController['breadcrumbs'].values())
+        .flatMap(breadcrumb => breadcrumb.points);
+      
+      updateBreadcrumbDecorations(editor, allPoints);
+    }
+  }, null, context.subscriptions);
+  
+  // Update initial decorations in active editor
+  if (vscode.window.activeTextEditor) {
+    const allPoints = Array.from(breadcrumbsController['breadcrumbs'].values())
+      .flatMap(breadcrumb => breadcrumb.points);
+    
+    updateBreadcrumbDecorations(vscode.window.activeTextEditor, allPoints);
+  }
 }
 
 export function deactivate(context: vscode.ExtensionContext) {
   // persist comments in file
   saveNotesToFile(noteMap);
+  
+  // persist breadcrumbs in file
+  saveBreadcrumbsToFile(breadcrumbsController['breadcrumbs']);
 }

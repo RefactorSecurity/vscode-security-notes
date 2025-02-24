@@ -80,6 +80,22 @@
       {
         "command": "security-notes.saveNotesToFile",
         "title": "Security-Notes: Save Notes to Local Database"
+      },
+      {
+        "command": "security-notes.createBreadcrumb",
+        "title": "Security-Notes: Create Breadcrumb"
+      },
+      {
+        "command": "security-notes.addBreadcrumbPoint",
+        "title": "Security-Notes: Add Point to Breadcrumb"
+      },
+      {
+        "command": "security-notes.followBreadcrumb",
+        "title": "Security-Notes: Follow Breadcrumb"
+      },
+      {
+        "command": "security-notes.saveBreadcrumbsToFile",
+        "title": "Security-Notes: Save Breadcrumbs to Local Database"
       }
     ],
     "configuration": {
@@ -238,6 +254,11 @@
           "type": "webview",
           "name": "Export Notes",
           "id": "export-notes-view"
+        },
+        {
+          "type": "webview",
+          "name": "Breadcrumbs",
+          "id": "breadcrumbs-sidebar-view"
         }
       ]
     },
@@ -249,7 +270,26 @@
           "icon": "resources/security_notes_icon.svg"
         }
       ]
-    }
+    },
+    "keybindings": [
+      {
+        "command": "security-notes.createBreadcrumb",
+        "key": "ctrl+alt+b",
+        "mac": "cmd+alt+b",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "security-notes.addBreadcrumbPoint",
+        "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "security-notes.followBreadcrumb",
+        "key": "ctrl+alt+f",
+        "mac": "cmd+alt+f"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
