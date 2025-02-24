@@ -181,43 +181,62 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   );
 
-  // set note status as vulnerable button
+  /**
+   * Handles the common logic for setting a note's status via a command.
+   *
+   * @param reply The argument passed by the command (either CommentReply or just the thread).
+   * @param status The NoteStatus to set (TODO, Vulnerable, Not Vulnerable).
+   * @param noteMap The object storing all notes in memory.
+   * @param remoteDb Remote db for collaboration.
+   */
+  const handleSetStatusAction = (
+    reply: vscode.CommentReply | { thread: vscode.CommentThread },
+    status: NoteStatus,
+    noteMap: Map<string, vscode.CommentThread>,
+    remoteDb?: RemoteDb
+  ) => {
+    const thread = reply.thread;
+    // Extract the text of the reply box
+    const text = 'text' in reply ? reply.text : undefined;
+
+    // Set the status (this function handles adding the status change comment)
+    setNoteStatus(
+      thread,
+      status, // New status to set
+      noteMap,
+      '',
+      remoteDb,
+      text // Reply text
+    );
+  };
+
+  // --- Register the status commands ---
+
+  // Set note status as Vulnerable button
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'security-notes.setNoteStatusVulnerable',
-      (commentReply: vscode.CommentReply) =>
-        setNoteStatus(
-          commentReply.thread,
-          NoteStatus.Vulnerable,
-          noteMap,
-          '',
-          remoteDb,
-        ),
-    ),
+      (reply: vscode.CommentReply | { thread: vscode.CommentThread }) =>
+        handleSetStatusAction(reply, NoteStatus.Vulnerable, noteMap, remoteDb)
+    )
   );
 
-  // set note status as not vulnerable button
+  // Set note status as Not Vulnerable button
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'security-notes.setNoteStatusNotVulnerable',
-      (commentReply: vscode.CommentReply) =>
-        setNoteStatus(
-          commentReply.thread,
-          NoteStatus.NotVulnerable,
-          noteMap,
-          '',
-          remoteDb,
-        ),
-    ),
+      (reply: vscode.CommentReply | { thread: vscode.CommentThread }) =>
+        handleSetStatusAction(reply, NoteStatus.NotVulnerable, noteMap, remoteDb)
+    )
   );
 
-  // set note status as TODO button
+  // Set note status as TODO button
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'security-notes.setNoteStatusToDo',
-      (commentReply: vscode.CommentReply) =>
-        setNoteStatus(commentReply.thread, NoteStatus.TODO, noteMap, '', remoteDb),
-    ),
+      (reply: vscode.CommentReply | { thread: vscode.CommentThread }) =>
+        handleSetStatusAction(reply, NoteStatus.TODO, noteMap, remoteDb)
+    )
   );
 
   // webview for importing tool results

@@ -43,26 +43,29 @@ export const setNoteStatus = (
   noteMap: Map<string, vscode.CommentThread>,
   author?: string,
   remoteDb?: RemoteDb,
+  replyText?: string,
 ) => {
   const comment: vscode.Comment | any = thread.comments[0];
 
-  // Remove previous status if any
-  let removed = false;
-  Object.values(NoteStatus).forEach((noteStatus) => {
-    if (!removed && comment.body.toString().startsWith(`[${noteStatus}] `)) {
-      comment.body = comment.body.toString().slice(noteStatus.length + 3);
-      removed = true;
-    }
-  });
+  let originalText = comment.body.toString();
 
-  // Prepend new status on first note comment
-  comment.body = `[${status}] ${comment.body}`;
-  comment.savedBody = comment.body;
+  // Clean up any existing status badges
+  const statusValuesPattern = Object.values(NoteStatus).join('|');
+  const statusRegex = new RegExp(`^\\[(${statusValuesPattern})\\] `, 'g');
+  originalText = originalText.replace(statusRegex, '');
+
+  // Update the comment
+  comment.body = `[${status}] ${originalText}`;
+  comment.savedBody = originalText;
 
   // Add note comment about status change
+  const statusMessage = replyText ?
+    `Status changed to ${status}.\n\n${replyText}` :
+    `Status changed to ${status}.`;
+
   saveNoteComment(
     thread,
-    `Status changed to ${status}.`,
+    statusMessage,
     false,
     noteMap,
     author ? author : '',

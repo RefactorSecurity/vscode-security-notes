@@ -9,7 +9,7 @@ export class NoteComment implements vscode.Comment {
   label: string | undefined;
   savedBody: string | vscode.MarkdownString; // for the Cancel button
   constructor(
-    public body: string,
+    public body: string | vscode.MarkdownString,
     public mode: vscode.CommentMode,
     public author: vscode.CommentAuthorInformation,
     public parent?: vscode.CommentThread,
