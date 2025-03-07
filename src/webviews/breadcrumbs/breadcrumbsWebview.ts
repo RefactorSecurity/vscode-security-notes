@@ -72,6 +72,36 @@ export class BreadcrumbsWebview {
               vscode.window.showErrorMessage(`Error navigating to breadcrumb point: ${err.message || 'Unknown error'}`);
             }
             return;
+          case 'getCodeSnippet':
+            console.log('Received getCodeSnippet message:', message);
+            try {
+              // Parse URI and create range as above
+              const uri = vscode.Uri.parse(message.uri);
+              
+              const start = new vscode.Position(
+                typeof message.range.start.line === 'number' ? message.range.start.line : 0,
+                typeof message.range.start.character === 'number' ? message.range.start.character : 0
+              );
+              
+              const end = new vscode.Position(
+                typeof message.range.end.line === 'number' ? message.range.end.line : 0,
+                typeof message.range.end.character === 'number' ? message.range.end.character : 0
+              );
+              
+              const range = new vscode.Range(start, end);
+              
+              // Fetch code snippet asynchronously
+              this.fetchCodeSnippet(uri, range, message.pointId);
+            } catch (err: any) {
+              console.error('Error processing getCodeSnippet message:', err);
+              // Send error message back to webview
+              this._panel.webview.postMessage({
+                command: 'updateCodeSnippet',
+                pointId: message.pointId,
+                snippet: `Error: ${err.message || 'Unknown error'}`
+              });
+            }
+            return;
         }
       },
       null,
@@ -94,6 +124,49 @@ export class BreadcrumbsWebview {
     } catch (err: any) {
       console.error('Error navigating to breadcrumb point:', err);
       vscode.window.showErrorMessage(`Error opening document: ${err.message || 'Unknown error'}`);
+    }
+  }
+  
+  // Retrieve the code snippet for a given URI and range
+  private getCodeSnippet(uri: vscode.Uri, range: vscode.Range): string {
+    try {
+      // We can't use await directly here as this is not an async method
+      // So we return a placeholder and will update it after fetching
+      return 'Loading snippet...';
+    } catch (err: any) {
+      console.error('Error getting code snippet:', err);
+      return 'Error loading snippet';
+    }
+  }
+  
+  // Fetch code snippet asynchronously and send it back to the webview
+  private async fetchCodeSnippet(uri: vscode.Uri, range: vscode.Range, pointId: string): Promise<void> {
+    try {
+      // Open the document to get its text
+      const document = await vscode.workspace.openTextDocument(uri);
+      
+      // Create a range that includes the full lines
+      const newRange = new vscode.Range(
+        new vscode.Position(range.start.line, 0),
+        new vscode.Position(range.end.line + 1, 0)
+      );
+      
+      // Get the text from the document for the specified range
+      const codeSnippet = document.getText(newRange).trimEnd();
+      
+      // Send the code snippet back to the webview
+      this._panel.webview.postMessage({
+        command: 'updateCodeSnippet',
+        pointId: pointId,
+        snippet: codeSnippet
+      });
+    } catch (err: any) {
+      console.error('Error fetching code snippet:', err);
+      this._panel.webview.postMessage({
+        command: 'updateCodeSnippet',
+        pointId: pointId,
+        snippet: `Error: ${err.message || 'Unknown error'}`
+      });
     }
   }
 
@@ -133,18 +206,27 @@ export class BreadcrumbsWebview {
           // Use data attributes for URI and range to avoid string escaping issues
           return `
             <div class="breadcrumb-point" data-index="${index}" data-point-id="${point.id}">
-              <div>
-                <span class="tag">${point.tag}</span>
-                <span class="ordinal">#${point.ordinal + 1}</span>
-                <span class="filename">${fileName}:${lineNumber}</span>
+              <div class="breadcrumb-point-header">
+                <div>
+                  <span class="tag">${point.tag}</span>
+                  <span class="ordinal">#${point.ordinal + 1}</span>
+                  <span class="filename">${fileName}:${lineNumber}</span>
+                </div>
+                <button class="navigate-btn" data-uri="${encodeURIComponent(point.uri.toString())}" 
+                  data-start-line="${point.range.start.line}" 
+                  data-start-char="${point.range.start.character}" 
+                  data-end-line="${point.range.end.line}" 
+                  data-end-char="${point.range.end.character}">
+                  Go to Point
+                </button>
               </div>
-              <button class="navigate-btn" data-uri="${encodeURIComponent(point.uri.toString())}" 
+              <div class="code-snippet" data-point-id="${point.id}" data-uri="${encodeURIComponent(point.uri.toString())}" 
                 data-start-line="${point.range.start.line}" 
                 data-start-char="${point.range.start.character}" 
                 data-end-line="${point.range.end.line}" 
                 data-end-char="${point.range.end.character}">
-                Go to Point
-              </button>
+                <pre>Loading code snippet...</pre>
+              </div>
             </div>
           `;
         }).join('');
@@ -192,12 +274,33 @@ export class BreadcrumbsWebview {
         }
         .breadcrumb-point {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
             margin: 5px 0;
             padding: 5px;
             background-color: var(--vscode-editor-lineHighlightBackground);
             border-radius: 3px;
+        }
+        .breadcrumb-point-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .code-snippet {
+            margin-top: 5px;
+            border: 1px solid var(--vscode-panel-border);
+            border-radius: 3px;
+            padding: 5px;
+            max-height: 200px;
+            overflow: auto;
+            background-color: var(--vscode-editor-background);
+            font-family: monospace;
+            font-size: 12px;
+            width: 100%;
+        }
+        .code-snippet pre {
+            margin: 0;
+            white-space: pre-wrap;
         }
         .tag {
             font-weight: bold;
@@ -288,6 +391,39 @@ export class BreadcrumbsWebview {
             }
         });
         
+        // Load all code snippets when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllCodeSnippets();
+        });
+        
+        function loadAllCodeSnippets() {
+            const snippetElements = document.querySelectorAll('.code-snippet');
+            snippetElements.forEach(element => {
+                const uri = decodeURIComponent(element.dataset.uri);
+                const range = {
+                    start: {
+                        line: parseInt(element.dataset.startLine, 10),
+                        character: parseInt(element.dataset.startChar, 10)
+                    },
+                    end: {
+                        line: parseInt(element.dataset.endLine, 10),
+                        character: parseInt(element.dataset.endChar, 10)
+                    }
+                };
+                
+                loadCodeSnippet(element, uri, range);
+            });
+        }
+        
+        function loadCodeSnippet(element, uri, range) {
+            vscode.postMessage({
+                command: 'getCodeSnippet',
+                uri: uri,
+                range: range,
+                pointId: element.dataset.pointId
+            });
+        }
+        
         function createBreadcrumb() {
             const label = document.getElementById('newBreadcrumbLabel').value;
             if (label) {
@@ -314,6 +450,19 @@ export class BreadcrumbsWebview {
                 range: range
             });
         }
+        
+        // Listen for messages from the extension
+        window.addEventListener('message', event => {
+            const message = event.data;
+            
+            if (message.command === 'updateCodeSnippet') {
+                const selector = '.code-snippet[data-point-id="' + message.pointId + '"]';
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.querySelector('pre').textContent = message.snippet;
+                }
+            }
+        });
     </script>
 </body>
 </html>`;
