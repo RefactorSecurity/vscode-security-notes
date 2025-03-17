@@ -6,6 +6,7 @@ import { NoteComment } from './models/noteComment';
 import { Resource } from './reactions/resource';
 import { ImportToolResultsWebview } from './webviews/import-tool-results/importToolResultsWebview';
 import { ExportNotesWebview } from './webviews/export-notes/exportNotesWebview';
+import { ExportBreadcrumbsWebview } from './webviews/export-breadcrumbs/exportBreadcrumbsWebview';
 import { commentController } from './controllers/comments';
 import { breadcrumbsController } from './controllers/breadcrumbs';
 import { reactionHandler } from './handlers/reaction';
@@ -246,6 +247,18 @@ export function activate(context: vscode.ExtensionContext) {
       exportNotesWebview,
     ),
   );
+  
+  // webview for exporting breadcrumbs
+  const exportBreadcrumbsWebview = new ExportBreadcrumbsWebview(
+    context.extensionUri, 
+    breadcrumbsController['breadcrumbs']
+  );
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      ExportBreadcrumbsWebview.viewType,
+      exportBreadcrumbsWebview,
+    ),
+  );
 
   // load persisted comments from file
   const persistedThreads = loadNotesFromFile();
@@ -408,6 +421,13 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('security-notes.saveBreadcrumbsToFile', () => {
       saveBreadcrumbsToFile(breadcrumbsController['breadcrumbs']);
+    })
+  );
+  
+  // Add command to export breadcrumbs
+  context.subscriptions.push(
+    vscode.commands.registerCommand('security-notes.exportBreadcrumbs', () => {
+      vscode.commands.executeCommand('export-breadcrumbs-view.focus');
     })
   );
 

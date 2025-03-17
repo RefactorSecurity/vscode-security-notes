@@ -96,6 +96,10 @@
       {
         "command": "security-notes.saveBreadcrumbsToFile",
         "title": "Security-Notes: Save Breadcrumbs to Local Database"
+      },
+      {
+        "command": "security-notes.exportBreadcrumbs",
+        "title": "Security-Notes: Export Breadcrumbs"
       }
     ],
     "configuration": {
@@ -254,6 +258,11 @@
           "type": "webview",
           "name": "Export Notes",
           "id": "export-notes-view"
+        },
+        {
+          "type": "webview",
+          "name": "Export Breadcrumbs",
+          "id": "export-breadcrumbs-view"
         },
         {
           "type": "webview",

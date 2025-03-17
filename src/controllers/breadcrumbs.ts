@@ -7,7 +7,9 @@ import { Breadcrumb, BreadcrumbPoint } from '../models/breadcrumb';
 export class BreadcrumbsController {
   private breadcrumbs: Map<string, Breadcrumb> = new Map();
   
-  constructor() {}
+  constructor() {
+    // This is intentionally empty since initialization happens at declaration
+  }
 
   // Create a new breadcrumb with the given label
   createBreadcrumb(label: string): Breadcrumb {
