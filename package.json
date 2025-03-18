@@ -100,6 +100,14 @@
       {
         "command": "security-notes.exportBreadcrumbs",
         "title": "Security-Notes: Export Breadcrumbs"
+      },
+      {
+        "command": "security-notes.addBreadcrumbPointFromNote",
+        "title": "Add to Breadcrumb",
+        "icon": {
+          "dark": "resources/breadcrumb.svg",
+          "light": "resources/breadcrumb.svg"
+        }
       }
     ],
     "configuration": {
@@ -203,16 +211,21 @@
         },
         {
           "command": "security-notes.setNoteStatusVulnerable",
-          "group": "inline@4",
+          "group": "inline@5",
           "when": "commentController == security-notes && !commentThreadIsEmpty"
         },
         {
           "command": "security-notes.setNoteStatusNotVulnerable",
-          "group": "inline@3",
+          "group": "inline@4",
           "when": "commentController == security-notes && !commentThreadIsEmpty"
         },
         {
           "command": "security-notes.setNoteStatusToDo",
+          "group": "inline@3",
+          "when": "commentController == security-notes && !commentThreadIsEmpty"
+        },
+        {
+          "command": "security-notes.addBreadcrumbPointFromNote",
           "group": "inline@2",
           "when": "commentController == security-notes && !commentThreadIsEmpty"
         },

@@ -225,6 +225,90 @@ export function activate(context: vscode.ExtensionContext) {
         setNoteStatus(commentReply.thread, NoteStatus.TODO, noteMap, '', remoteDb),
     ),
   );
+  
+  // add breadcrumb point from note button
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'security-notes.addBreadcrumbPointFromNote',
+      async (commentReply: vscode.CommentReply) => {
+        const thread = commentReply.thread;
+        if (!thread) {
+          return;
+        }
+        
+        // Get existing breadcrumbs
+        const breadcrumbs = breadcrumbsController.getAllBreadcrumbs();
+        if (breadcrumbs.length === 0) {
+          const createNew = await vscode.window.showInformationMessage(
+            'No breadcrumbs found. Create a new one?',
+            'Yes', 'No'
+          );
+          
+          if (createNew === 'Yes') {
+            vscode.commands.executeCommand('security-notes.createBreadcrumb');
+          }
+          return;
+        }
+
+        // Let user select which breadcrumb to add the point to
+        const breadcrumbLabels = breadcrumbs.map(b => ({ 
+          label: b.label, 
+          description: `(${b.points.length} points)`,
+          breadcrumb: b
+        }));
+        
+        const selectedBreadcrumb = await vscode.window.showQuickPick(breadcrumbLabels, {
+          placeHolder: 'Select a breadcrumb to add a point to'
+        });
+
+        if (!selectedBreadcrumb) {
+          return;
+        }
+
+        // Let user enter a tag for the breadcrumb point
+        const tag = await vscode.window.showInputBox({
+          prompt: 'Enter a tag for this breadcrumb point',
+          placeHolder: 'e.g., User Input, API Call'
+        });
+
+        if (!tag) {
+          return;
+        }
+
+        // Get active editor and selection
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+          vscode.window.showErrorMessage('No active editor');
+          return;
+        }
+
+        // Use the comment thread's range for the breadcrumb point
+        const range = thread.range;
+        
+        // Add point to the selected breadcrumb
+        breadcrumbsController.addPointToBreadcrumb(
+          selectedBreadcrumb.breadcrumb.id,
+          tag,
+          range,
+          editor.document.uri,
+          thread.contextValue // Link to the note ID
+        );
+
+        // Refresh UI and persist changes
+        breadcrumbsSidebarWebview.refreshWebview();
+        saveBreadcrumbsToFile(breadcrumbsController['breadcrumbs']);
+        
+        // Update decorations in the editor
+        updateBreadcrumbDecorations(
+          editor,
+          breadcrumbsController.getPointsForBreadcrumb(selectedBreadcrumb.breadcrumb.id)
+        );
+        
+        // Show confirmation
+        vscode.window.showInformationMessage(`Added point to breadcrumb "${selectedBreadcrumb.breadcrumb.label}"`);
+      }
+    ),
+  );
 
   // webview for importing tool results
   const importToolResultsWebview = new ImportToolResultsWebview(
