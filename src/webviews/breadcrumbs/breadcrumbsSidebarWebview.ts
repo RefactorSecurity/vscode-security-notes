@@ -156,14 +156,10 @@ export class BreadcrumbsSidebarWebview implements vscode.WebviewViewProvider {
     } else {
       breadcrumbsHtml = breadcrumbsArray.map(breadcrumb => {
         return `
-          <div class="breadcrumb-item">
+          <div class="breadcrumb-item" onclick="openBreadcrumbsPanel()">
             <div class="breadcrumb-header">
               <span class="breadcrumb-title">${breadcrumb.label}</span>
-              <span class="badge">${breadcrumb.points.length}</span>
-            </div>
-            <div class="breadcrumb-actions">
-              <button class="action-button" onclick="addBreadcrumbPoint('${breadcrumb.id}')">Add Point</button>
-              <button class="action-button delete" onclick="deleteBreadcrumb('${breadcrumb.id}')">Delete</button>
+              <span class="badge">${breadcrumb.points.length} points</span>
             </div>
           </div>
         `;
@@ -193,6 +189,11 @@ export class BreadcrumbsSidebarWebview implements vscode.WebviewViewProvider {
             border: 1px solid var(--vscode-panel-border);
             border-radius: 5px;
             padding: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .breadcrumb-item:hover {
+            background-color: var(--vscode-list-hoverBackground);
         }
         .breadcrumb-header {
             display: flex;
@@ -283,26 +284,7 @@ export class BreadcrumbsSidebarWebview implements vscode.WebviewViewProvider {
             }
         }
         
-        function addBreadcrumbPoint(breadcrumbId) {
-            // Prompt for a tag
-            const tag = prompt('Enter a tag for this breadcrumb point:');
-            if (tag) {
-                vscode.postMessage({
-                    command: 'addBreadcrumbPoint',
-                    breadcrumbId: breadcrumbId,
-                    tag: tag
-                });
-            }
-        }
-        
-        function deleteBreadcrumb(id) {
-            if (confirm('Are you sure you want to delete this breadcrumb?')) {
-                vscode.postMessage({
-                    command: 'deleteBreadcrumb',
-                    id: id
-                });
-            }
-        }
+        // Functions for 'add point' and 'delete' buttons removed as requested
         
         function openBreadcrumbsPanel() {
             vscode.postMessage({
