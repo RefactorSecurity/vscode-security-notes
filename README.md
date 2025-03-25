@@ -42,26 +42,6 @@ Security Notes allows the creation of notes within source files, which can be re
 
 By default your notes are backed up in a JSON file once you close VSCode. Once you open the project again, saved comments are loaded and shown on the UI.
 
-## Collaboration Mode
-
-Because chasing bugs with friends is more fun :)
-
-Security Notes allows sharing of notes in real-time with other users. To do so, it leverages the RethinkDB real-time database.
-
-First, make sure you have a RethinkDB database instance up and running. Then set your author name, and the database connection information in the extension's settings, and you are ready to go! Please see the section below for more details).
-
-Collaboration mode in action:
-
-![Demo for collaboration](images/demo-collaboration.gif)
-
-### Setting up the RethinkDB database
-
-We recommend following instructions in RethinkDB [installation guide](https://rethinkdb.com/docs/install/). Additionally, following [hardening steps](https://rethinkdb.com/docs/security/#wrapper), such as setting a password for the `admin` user and setting up SSL/TLS, are strongly encouraged.
-
-Naturally, you will want to collaborate with remote peers. To do so in a secure way, we recommend setting up access to RethinkDB via SSH or through a VPN like [Tailscale](http://tailscale.com). This way, you avoid having to expose the instance to any network, and also ensuring information in transit is encrypted.
-
-> **Important Notices:** When collaborating with others, ensure that all VSCode instances open the project from the same relative location. For example, if the source code repository you're reviewing has a directory structure like `source_code/app/src`, all peers should open VScode at the same level. Security Notes will store note location using relative paths, so they should be consistent. Also, after enabling the collaboration setting, VSCode would need to be restarted/reloaded for the change to have effect.
-
 ## Importing SAST results
 
 The extension allows you to import the output from SAST tools into notes, making the processing of the findings much easier:
@@ -90,6 +70,41 @@ gosec -fmt=json -out=gosec-results.json ./...
 # semgrep
 semgrep scan --json -o semgrep-results.json --config=auto .
 ```
+
+## Breadcrumbs
+
+The Breadcrumbs feature, as the name suggests, allows you to leave marks as you dive deeper into an implementation. Then, it will display the different snippets where you left your marks visually, in the same order as you marked them. This feature is very useful when trying to understand, and then explain, an implementation that has layers of abstractions. If you've worked with Java, the design patterns favor code that is abstracted, separeted into interfaces, DTOs, factories, etc. With Breadcrumbs, you will be able to document how something works from the entrypoint, to the final core function. 
+
+The following screenshot shows how a Breadcrumb looks:
+
+![Breadcrumb following login flow](images/breadcrumbs-1.png)
+
+The example shows a Breadcrumb created to follow the implementation of the login form. The idea was to start the Breadcrumb from the route definition, all the way down to the SQL query that matched the username and password in the database. There are three things to see in the screenshot:
+
+1) The left-most column, is the Security Notes pane, where you can see the different options the extension offer. Within these, you will see the Breadcrumbs pane, with the list of existing Breadcrumbs, as well as the possibility to export them.
+2) The middle column, where the code is, you can see how points within a Breadcrumb are displayed within the editor. The snippet that was selected as the point is highlighted in orange, and the description is shown next.
+3) The right-most pane is the Breadcrumb panel, where you will see all existing Breadcrumbs, including all the points with their respective code snippets.
+
+
+## Collaboration Mode
+
+Because chasing bugs with friends is more fun :)
+
+Security Notes allows sharing of notes in real-time with other users. To do so, it leverages the RethinkDB real-time database.
+
+First, make sure you have a RethinkDB database instance up and running. Then set your author name, and the database connection information in the extension's settings, and you are ready to go! Please see the section below for more details).
+
+Collaboration mode in action:
+
+![Demo for collaboration](images/demo-collaboration.gif)
+
+### Setting up the RethinkDB database
+
+We recommend following instructions in RethinkDB [installation guide](https://rethinkdb.com/docs/install/). Additionally, following [hardening steps](https://rethinkdb.com/docs/security/#wrapper), such as setting a password for the `admin` user and setting up SSL/TLS, are strongly encouraged.
+
+Naturally, you will want to collaborate with remote peers. To do so in a secure way, we recommend setting up access to RethinkDB via SSH or through a VPN like [Tailscale](http://tailscale.com). This way, you avoid having to expose the instance to any network, and also ensuring information in transit is encrypted.
+
+> **Important Notices:** When collaborating with others, ensure that all VSCode instances open the project from the same relative location. For example, if the source code repository you're reviewing has a directory structure like `source_code/app/src`, all peers should open VScode at the same level. Security Notes will store note location using relative paths, so they should be consistent. Also, after enabling the collaboration setting, VSCode would need to be restarted/reloaded for the change to have effect.
 
 ## Exporting notes in popular formats
 
