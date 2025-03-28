@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Breadcrumb, BreadcrumbPoint } from '../models/breadcrumb';
 import { getSetting } from '../helpers';
+import { getWorkspacePath, fullPathToRelative, relativePathToFull } from '../utils';
 
 export const saveBreadcrumbsToFile = (breadcrumbs: Map<string, Breadcrumb>): void => {
   const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -13,8 +14,8 @@ export const saveBreadcrumbsToFile = (breadcrumbs: Map<string, Breadcrumb>): voi
     return;
   }
 
-  const rootPath = workspaceFolders[0].uri.fsPath;
-  const filePath = path.join(rootPath, '.security-notes-breadcrumbs.json');
+  const filePath = path.join(getWorkspacePath(), '.security-notes_breadcrumbs.json');
+
 
   // Serialize breadcrumbs to JSON
   const serialized = serializeBreadcrumbs(breadcrumbs);
@@ -30,13 +31,12 @@ export const saveBreadcrumbsToFile = (breadcrumbs: Map<string, Breadcrumb>): voi
 export const loadBreadcrumbsFromFile = (): Map<string, Breadcrumb> => {
   const breadcrumbs = new Map<string, Breadcrumb>();
   const workspaceFolders = vscode.workspace.workspaceFolders;
-  
+
   if (!workspaceFolders) {
     return breadcrumbs;
   }
 
-  const rootPath = workspaceFolders[0].uri.fsPath;
-  const filePath = path.join(rootPath, '.security-notes-breadcrumbs.json');
+  const filePath = path.join(getWorkspacePath(), '.security-notes_breadcrumbs.json');
 
   if (!fs.existsSync(filePath)) {
     return breadcrumbs;
@@ -70,7 +70,7 @@ const serializeBreadcrumbs = (breadcrumbs: Map<string, Breadcrumb>): any[] => {
           character: point.range.end.character
         }
       },
-      uri: point.uri.toString(),
+      uri: fullPathToRelative(point.uri.fsPath),
       ordinal: point.ordinal,
       noteId: point.noteId
     }))
@@ -79,10 +79,10 @@ const serializeBreadcrumbs = (breadcrumbs: Map<string, Breadcrumb>): any[] => {
 
 const deserializeBreadcrumbs = (serialized: any[]): Map<string, Breadcrumb> => {
   const breadcrumbs = new Map<string, Breadcrumb>();
-  
+
   for (const item of serialized) {
     const breadcrumb = new Breadcrumb(item.id, item.label);
-    
+
     for (const pointData of item.points) {
       const point: BreadcrumbPoint = {
         id: pointData.id,
@@ -91,16 +91,16 @@ const deserializeBreadcrumbs = (serialized: any[]): Map<string, Breadcrumb> => {
           new vscode.Position(pointData.range.start.line, pointData.range.start.character),
           new vscode.Position(pointData.range.end.line, pointData.range.end.character)
         ),
-        uri: vscode.Uri.parse(pointData.uri),
+        uri: vscode.Uri.parse(relativePathToFull(pointData.uri)),
         ordinal: pointData.ordinal,
         noteId: pointData.noteId
       };
-      
+
       breadcrumb.addPoint(point);
     }
-    
+
     breadcrumbs.set(breadcrumb.id, breadcrumb);
   }
-  
+
   return breadcrumbs;
 };
