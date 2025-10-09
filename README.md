@@ -38,6 +38,12 @@ Security Notes allows the creation of notes within source files, which can be re
 
 ![Demo for basic usage](images/demo-basic-usage.gif)
 
+## Breadcrumb Trails
+
+Breadcrumbs let you capture the path you follow while reverse-engineering a feature. Start a trail with `Security Notes: Create Breadcrumb Trail`, highlight the snippets you visit, and run `Security Notes: Add Breadcrumb Crumb` to drop "crumbs" along the way. Each crumb stores the code selection, file/line information, and an optional note.
+
+Open the **Breadcrumbs** view from the Security Notes activity bar to see an interactive diagram of the active trail. Click any crumb in the diagram to jump back to that snippet in the editor, or switch trails from the dropdown to review other investigations. Trails are stored locally in `.security-notes-breadcrumbs.json` so you can revisit them later.
+
 ## Local database for Comments
 
 By default your notes are backed up in a JSON file once you close VSCode. Once you open the project again, saved comments are loaded and shown on the UI.

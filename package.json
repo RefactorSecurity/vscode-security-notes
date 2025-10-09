@@ -80,6 +80,30 @@
       {
         "command": "security-notes.saveNotesToFile",
         "title": "Security-Notes: Save Notes to Local Database"
+      },
+      {
+        "command": "security-notes.breadcrumbs.createTrail",
+        "title": "Security Notes: Create Breadcrumb Trail"
+      },
+      {
+        "command": "security-notes.breadcrumbs.selectTrail",
+        "title": "Security Notes: Select Active Breadcrumb Trail"
+      },
+      {
+        "command": "security-notes.breadcrumbs.addCrumb",
+        "title": "Security Notes: Add Breadcrumb Crumb"
+      },
+      {
+        "command": "security-notes.breadcrumbs.removeCrumb",
+        "title": "Security Notes: Remove Breadcrumb Crumb"
+      },
+      {
+        "command": "security-notes.breadcrumbs.editCrumbNote",
+        "title": "Security Notes: Edit Breadcrumb Crumb Note"
+      },
+      {
+        "command": "security-notes.breadcrumbs.showTrailDiagram",
+        "title": "Security Notes: Show Breadcrumb Diagram"
       }
     ],
     "configuration": {
@@ -94,6 +118,11 @@
           "type": "string",
           "description": "Local database file path.",
           "default": ".security-notes.json"
+        },
+        "security-notes.breadcrumbs.localDatabase": {
+          "type": "string",
+          "description": "Local database file path for breadcrumb trails.",
+          "default": ".security-notes-breadcrumbs.json"
         },
         "security-notes.collab.enabled": {
           "type": "boolean",
@@ -225,6 +254,25 @@
           "group": "inline@2",
           "when": "commentController == security-notes"
         }
+      ],
+      "editor/context": [
+        {
+          "command": "security-notes.breadcrumbs.addCrumb",
+          "group": "navigation@10",
+          "when": "editorHasSelection"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "security-notes.breadcrumbs.addCrumb",
+          "group": "navigation",
+          "when": "view == breadcrumbs-view"
+        },
+        {
+          "command": "security-notes.breadcrumbs.createTrail",
+          "group": "navigation@2",
+          "when": "view == breadcrumbs-view"
+        }
       ]
     },
     "views": {
@@ -238,6 +286,11 @@
           "type": "webview",
           "name": "Export Notes",
           "id": "export-notes-view"
+        },
+        {
+          "type": "webview",
+          "name": "Breadcrumbs",
+          "id": "breadcrumbs-view"
         }
       ]
     },
