@@ -6,6 +6,7 @@ import { Crumb, Trail } from '../../models/breadcrumb';
 import { formatRangeLabel, snippetPreview } from '../../breadcrumbs/format';
 import { fullPathToRelative } from '../../utils';
 import { revealCrumb } from '../../breadcrumbs/commands';
+import { exportTrailToMarkdown } from '../../breadcrumbs/export';
 
 interface WebviewCrumb {
   id: string;
@@ -42,7 +43,8 @@ type WebviewMessage =
   | { type: 'openCrumb'; trailId: string; crumbId: string }
   | { type: 'setActiveTrail'; trailId: string }
   | { type: 'createTrail' }
-  | { type: 'addCrumb' };
+  | { type: 'addCrumb' }
+  | { type: 'exportTrail' };
 
 export class BreadcrumbsWebview implements vscode.WebviewViewProvider, vscode.Disposable {
   public static readonly viewType = 'breadcrumbs-view';
@@ -114,8 +116,12 @@ export class BreadcrumbsWebview implements vscode.WebviewViewProvider, vscode.Di
           vscode.commands.executeCommand('security-notes.breadcrumbs.createTrail');
           break;
         }
-        case 'addCrumb': {
+        /*case 'addCrumb': {
           vscode.commands.executeCommand('security-notes.breadcrumbs.addCrumb');
+          break;
+        }*/
+        case 'exportTrail': {
+          this.handleExportTrail();
           break;
         }
         default: {
@@ -199,6 +205,17 @@ export class BreadcrumbsWebview implements vscode.WebviewViewProvider, vscode.Di
     revealCrumb(crumb);
   }
 
+  private async handleExportTrail() {
+    const activeTrail = this.store.getActiveTrail();
+    if (!activeTrail) {
+      vscode.window.showInformationMessage(
+        '[Breadcrumbs] Select a trail before exporting.',
+      );
+      return;
+    }
+    await exportTrailToMarkdown(activeTrail);
+  }
+
   private getHtmlForWebview(webview: vscode.Webview) {
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
@@ -249,6 +266,7 @@ export class BreadcrumbsWebview implements vscode.WebviewViewProvider, vscode.Di
       <div class="breadcrumbs-actions">
         <button class="breadcrumbs-button" data-action="create">New trail</button>
         <button class="breadcrumbs-button" data-action="add">Add crumb</button>
+        <button class="breadcrumbs-button" data-action="export">Export</button>
       </div>
     </section>
     <section>

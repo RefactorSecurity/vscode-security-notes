@@ -104,6 +104,10 @@
       {
         "command": "security-notes.breadcrumbs.showTrailDiagram",
         "title": "Security Notes: Show Breadcrumb Diagram"
+      },
+      {
+        "command": "security-notes.breadcrumbs.exportTrail",
+        "title": "Security Notes: Export Breadcrumb Trail"
       }
     ],
     "configuration": {
@@ -271,6 +275,11 @@
         {
           "command": "security-notes.breadcrumbs.createTrail",
           "group": "navigation@2",
+          "when": "view == breadcrumbs-view"
+        },
+        {
+          "command": "security-notes.breadcrumbs.exportTrail",
+          "group": "navigation@3",
           "when": "view == breadcrumbs-view"
         }
       ]

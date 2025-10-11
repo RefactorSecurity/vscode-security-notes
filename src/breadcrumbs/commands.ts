@@ -5,6 +5,7 @@ import { BreadcrumbStore } from './store';
 import { Crumb, Trail } from '../models/breadcrumb';
 import { fullPathToRelative } from '../utils';
 import { formatRangeLabel, snippetPreview } from './format';
+import { exportTrailToMarkdown } from './export';
 
 interface TrailQuickPickItem extends vscode.QuickPickItem {
   trail: Trail;
@@ -104,6 +105,7 @@ export const revealCrumb = async (crumb: Crumb) => {
 
 interface RegisterBreadcrumbCommandsOptions {
   onShowTrailDiagram?: (trail: Trail) => Promise<void> | void;
+  onExportTrail?: (trail: Trail) => Promise<void> | void;
 }
 
 export const registerBreadcrumbCommands = (
@@ -260,6 +262,20 @@ export const registerBreadcrumbCommands = (
         vscode.window.showInformationMessage(
           '[Breadcrumbs] Diagram view is not available yet in this session.',
         );
+      }
+    }),
+  );
+
+  disposables.push(
+    vscode.commands.registerCommand('security-notes.breadcrumbs.exportTrail', async () => {
+      const trail = await ensureActiveTrail(store);
+      if (!trail) {
+        return;
+      }
+      if (options.onExportTrail) {
+        await options.onExportTrail(trail);
+      } else {
+        await exportTrailToMarkdown(trail);
       }
     }),
   );

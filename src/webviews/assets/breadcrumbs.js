@@ -7,6 +7,7 @@
   const content = document.getElementById('breadcrumbs-content');
   const createButton = document.querySelector('[data-action="create"]');
   const addButton = document.querySelector('[data-action="add"]');
+  const exportButton = document.querySelector('[data-action="export"]');
 
   let currentState;
 
@@ -38,6 +39,10 @@
 
   addButton.addEventListener('click', () => {
     vscode.postMessage({ type: 'addCrumb' });
+  });
+
+  exportButton.addEventListener('click', () => {
+    vscode.postMessage({ type: 'exportTrail' });
   });
 
   function renderState(state) {
