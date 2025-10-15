@@ -129,61 +129,88 @@
     list.className = 'crumb-list';
 
     trail.crumbs.forEach((crumb, index) => {
-      list.appendChild(renderCrumb(crumb, index === trail.crumbs.length - 1, trail.id));
+      list.appendChild(renderCrumb(crumb, index, trail.id));
     });
 
     content.appendChild(list);
   }
 
-  function renderCrumb(crumb, isLast, trailId) {
-    const item = document.createElement('div');
-    item.className = `crumb-item${isLast ? ' crumb-item--last' : ''}`;
-    item.dataset.crumbId = crumb.id;
-    item.dataset.trailId = trailId;
+  function renderCrumb(crumb, index, trailId) {
+    const details = document.createElement('details');
+    details.className = 'crumb-item';
+    details.dataset.crumbId = crumb.id;
+    details.dataset.trailId = trailId;
+    if (index === 0) {
+      details.open = true;
+    }
 
-    const marker = document.createElement('div');
-    marker.className = 'crumb-item__marker';
-    const markerLabel = document.createElement('span');
-    markerLabel.textContent = String(crumb.index + 1);
-    marker.appendChild(markerLabel);
-    item.appendChild(marker);
+    const summary = document.createElement('summary');
+    summary.className = 'crumb-summary';
+
+    const summaryMeta = document.createElement('div');
+    summaryMeta.className = 'crumb-summary__meta';
+
+    const step = document.createElement('span');
+    step.className = 'crumb-step';
+    step.textContent = `Step ${index + 1}`;
+    summaryMeta.appendChild(step);
+
+    const title = document.createElement('span');
+    title.className = 'crumb-title';
+    title.textContent = `${crumb.filePath}:${crumb.rangeLabel}`;
+    summaryMeta.appendChild(title);
+
+    summary.appendChild(summaryMeta);
+
+    const preview = document.createElement('span');
+    preview.className = 'crumb-preview';
+    preview.textContent = crumb.note || crumb.snippetPreview || '(no preview)';
+    summary.appendChild(preview);
+
+    const chevron = document.createElement('span');
+    chevron.className = 'crumb-chevron';
+    chevron.innerHTML = '▾';
+    summary.appendChild(chevron);
+
+    details.appendChild(summary);
 
     const body = document.createElement('div');
-    body.className = 'crumb-item__body';
+    body.className = 'crumb-body';
 
-    const header = document.createElement('div');
-    header.className = 'crumb-item__header';
-    const path = document.createElement('span');
-    path.className = 'crumb-item__path';
-    path.textContent = `${crumb.filePath}:${crumb.rangeLabel}`;
-    header.appendChild(path);
-    body.appendChild(header);
+    const meta = document.createElement('p');
+    meta.className = 'crumb-meta';
+    const created = new Date(crumb.createdAt).toLocaleString();
+    meta.textContent = `Captured ${created}`;
+    body.appendChild(meta);
 
     if (crumb.note) {
       const note = document.createElement('p');
-      note.className = 'crumb-item__note';
+      note.className = 'crumb-note';
       note.textContent = crumb.note;
       body.appendChild(note);
     }
 
     const snippet = document.createElement('pre');
-    snippet.className = 'crumb-item__snippet';
+    snippet.className = 'crumb-snippet';
     snippet.textContent = crumb.snippet;
-    body.appendChild(snippet);
-
-    const meta = document.createElement('p');
-    meta.className = 'crumb-item__meta';
-    const created = new Date(crumb.createdAt).toLocaleString();
-    meta.textContent = `Captured ${created}`;
-    body.appendChild(meta);
-
-    body.addEventListener('click', () => {
+    snippet.addEventListener('click', (event) => {
+      event.stopPropagation();
       vscode.postMessage({ type: 'openCrumb', trailId, crumbId: crumb.id });
     });
+    body.appendChild(snippet);
 
-    item.appendChild(body);
+    details.addEventListener('toggle', () => {
+      if (details.open) {
+        chevron.innerHTML = '▾';
+      } else {
+        chevron.innerHTML = '▸';
+      }
+    });
 
-    return item;
+    chevron.innerHTML = details.open ? '▾' : '▸';
+    details.appendChild(body);
+
+    return details;
   }
 
   vscode.postMessage({ type: 'ready' });

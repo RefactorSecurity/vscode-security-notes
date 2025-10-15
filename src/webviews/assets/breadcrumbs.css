@@ -74,90 +74,112 @@
 .crumb-list {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.9rem;
 }
 
 .crumb-item {
-  display: grid;
-  grid-template-columns: 32px 1fr;
-  gap: 0.75rem;
-  position: relative;
-}
-
-.crumb-item__marker {
-  position: relative;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--vscode-button-secondaryBackground);
-  color: var(--vscode-button-secondaryForeground);
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 0.2rem;
-}
-
-.crumb-item__marker::after {
-  content: '';
-  position: absolute;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  height: calc(100% + 18px);
-  background: var(--vscode-editorLineNumber-activeForeground, rgba(128, 128, 128, 0.6));
-}
-
-.crumb-item--last .crumb-item__marker::after {
-  display: none;
-}
-
-.crumb-item__body {
   border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 8px;
   background: var(--vscode-editorWidget-background);
-  border-radius: 6px;
-  padding: 0.75rem;
-  cursor: pointer;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.crumb-item__body:hover {
+.crumb-item[open] {
   border-color: var(--vscode-focusBorder);
   box-shadow: 0 0 0 1px var(--vscode-focusBorder);
 }
 
-.crumb-item__header {
+.crumb-item summary {
+  list-style: none;
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
 }
 
-.crumb-item__path {
+.crumb-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.crumb-summary__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.crumb-step {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--vscode-textLink-activeForeground, rgba(100, 149, 237, 0.25));
+  color: var(--vscode-textLink-foreground);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
   font-weight: 600;
 }
 
-.crumb-item__note {
+.crumb-title {
+  font-weight: 600;
+  color: var(--vscode-editor-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crumb-preview {
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.85rem;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crumb-chevron {
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.85rem;
+}
+
+.crumb-body {
+  padding: 0 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-top: 1px solid var(--vscode-editorWidget-border);
+}
+
+.crumb-meta {
   margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: var(--vscode-descriptionForeground);
+}
+
+.crumb-note {
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--vscode-textPreformat-foreground);
   color: var(--vscode-descriptionForeground);
   font-style: italic;
 }
 
-.crumb-item__snippet {
-  margin: 0.75rem 0 0;
+.crumb-snippet {
+  margin: 0;
   background: var(--vscode-editor-background);
   border: 1px solid var(--vscode-editorWidget-border);
   border-radius: 4px;
-  padding: 0.5rem;
+  padding: 0.6rem;
   white-space: pre-wrap;
   word-break: break-word;
   font-family: var(--vscode-editor-font-family, monospace);
   font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.crumb-item__meta {
-  margin: 0.75rem 0 0;
-  font-size: 0.75rem;
-  color: var(--vscode-descriptionForeground);
+.crumb-snippet:hover {
+  border-color: var(--vscode-focusBorder);
+  box-shadow: 0 0 0 1px var(--vscode-focusBorder);
 }
