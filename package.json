@@ -265,23 +265,6 @@
           "group": "navigation@10",
           "when": "editorHasSelection"
         }
-      ],
-      "view/title": [
-        {
-          "command": "security-notes.breadcrumbs.addCrumb",
-          "group": "navigation",
-          "when": "view == breadcrumbs-view"
-        },
-        {
-          "command": "security-notes.breadcrumbs.createTrail",
-          "group": "navigation@2",
-          "when": "view == breadcrumbs-view"
-        },
-        {
-          "command": "security-notes.breadcrumbs.exportTrail",
-          "group": "navigation@3",
-          "when": "view == breadcrumbs-view"
-        }
       ]
     },
     "views": {
