@@ -21,11 +21,8 @@ const buildSummary = (trail: Trail) => {
   lines.push(headline(2, 'Summary'));
   lines.push('');
   lines.push(`- **Total crumbs:** ${trail.crumbs.length}`);
-  lines.push(`- **Files touched:** ${files.size}`);
+  lines.push(`- **Source Files Involved:** ${files.size}`);
   lines.push(`- **Generated:** ${formatDate(new Date().toISOString())}`);
-  if (first && last) {
-    lines.push(`- **Investigation window:** ${first} – ${last}`);
-  }
   lines.push('');
   return lines.join('\n');
 };
@@ -81,9 +78,9 @@ export const exportTrailToMarkdown = async (trail: Trail, uri?: vscode.Uri) => {
     const fileNameSafe = trail.name.replace(/[^a-z0-9\-_]+/gi, '-').replace(/-+/g, '-');
     const defaultUri = vscode.workspace.workspaceFolders?.length
       ? vscode.Uri.joinPath(
-          vscode.workspace.workspaceFolders[0].uri,
-          `${fileNameSafe || 'breadcrumb-trail'}.md`,
-        )
+        vscode.workspace.workspaceFolders[0].uri,
+        `${fileNameSafe || 'breadcrumb-trail'}-Breadcrumb.md`,
+      )
       : undefined;
 
     uri = await vscode.window.showSaveDialog({

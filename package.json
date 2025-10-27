@@ -91,7 +91,7 @@
       },
       {
         "command": "security-notes.breadcrumbs.addCrumb",
-        "title": "Security Notes: Add Breadcrumb Crumb"
+        "title": "Security Notes: Add Breadcrumb to Trail"
       },
       {
         "command": "security-notes.breadcrumbs.removeCrumb",
@@ -99,7 +99,7 @@
       },
       {
         "command": "security-notes.breadcrumbs.editCrumbNote",
-        "title": "Security Notes: Edit Breadcrumb Crumb Note"
+        "title": "Security Notes: Edit Breadcrumb Note"
       },
       {
         "command": "security-notes.breadcrumbs.showTrailDiagram",

@@ -259,14 +259,15 @@ export class BreadcrumbsWebview implements vscode.WebviewViewProvider, vscode.Di
   </head>
   <body>
     <section class="breadcrumbs-header">
-      <div>
-        <h2 class="breadcrumbs-title">Breadcrumb trails</h2>
-        <p class="breadcrumbs-subtitle">Visualise how you navigated complex features.</p>
+    <!--  
+    <div>
+        <h2 class="breadcrumbs-title">Breadcrumbs</h2>
+        <p class="breadcrumbs-subtitle">Use this feature to track complex implementations throughout different source code files. Start by creating a Trail, and then add crumbs to code snippets as you dig deeper into an implementation.</p>
       </div>
+      -->
       <div class="breadcrumbs-actions">
-        <button class="breadcrumbs-button" data-action="create">New trail</button>
-        <button class="breadcrumbs-button" data-action="add">Add crumb</button>
-        <button class="breadcrumbs-button" data-action="export">Export</button>
+        <button class="breadcrumbs-button" data-action="create">New Trail</button>
+        <button class="breadcrumbs-button" data-action="export">Export Trail</button>
       </div>
     </section>
     <section>

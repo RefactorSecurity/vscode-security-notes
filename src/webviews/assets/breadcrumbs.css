@@ -12,7 +12,7 @@
 }
 
 .breadcrumbs-subtitle {
-  margin: 0.25rem 0 0;
+  margin: 0.10rem 0 0;
   color: var(--vscode-descriptionForeground);
   font-size: 0.85rem;
 }
@@ -29,6 +29,7 @@
   border-radius: 4px;
   padding: 0.3rem 0.8rem;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .breadcrumbs-button:hover {
@@ -114,10 +115,11 @@
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: var(--vscode-textLink-activeForeground, rgba(100, 149, 237, 0.25));
-  color: var(--vscode-textLink-foreground);
-  border-radius: 999px;
-  padding: 0.1rem 0.6rem;
+  background: var(--vscode-editorWidget-background);
+  border: 1px solid var(--vscode-editorWidget-border);
+  color: var(--vscode-editor-foreground);
+  border-radius: 5px;
+  padding: 0.15rem 0.5rem;
   font-weight: 600;
 }
 

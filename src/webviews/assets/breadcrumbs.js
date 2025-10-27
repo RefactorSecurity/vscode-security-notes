@@ -37,9 +37,9 @@
     vscode.postMessage({ type: 'createTrail' });
   });
 
-  addButton.addEventListener('click', () => {
-    vscode.postMessage({ type: 'addCrumb' });
-  });
+  if (addButton) {
+    addButton.remove();
+  }
 
   exportButton.addEventListener('click', () => {
     vscode.postMessage({ type: 'exportTrail' });

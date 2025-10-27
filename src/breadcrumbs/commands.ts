@@ -7,6 +7,8 @@ import { fullPathToRelative } from '../utils';
 import { formatRangeLabel, snippetPreview } from './format';
 import { exportTrailToMarkdown } from './export';
 
+let lastActiveEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor ?? undefined;
+
 interface TrailQuickPickItem extends vscode.QuickPickItem {
   trail: Trail;
 }
@@ -116,6 +118,14 @@ export const registerBreadcrumbCommands = (
   const disposables: vscode.Disposable[] = [];
 
   disposables.push(
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) {
+        lastActiveEditor = editor;
+      }
+    }),
+  );
+
+  disposables.push(
     vscode.commands.registerCommand('security-notes.breadcrumbs.createTrail', async () => {
       const name = await vscode.window.showInputBox({
         prompt: 'Name for the new breadcrumb trail',
@@ -156,13 +166,15 @@ export const registerBreadcrumbCommands = (
 
   disposables.push(
     vscode.commands.registerCommand('security-notes.breadcrumbs.addCrumb', async () => {
-      const editor = vscode.window.activeTextEditor;
+      const editor = vscode.window.activeTextEditor ?? lastActiveEditor;
       if (!editor) {
         vscode.window.showInformationMessage(
           '[Breadcrumbs] Open a file and select the code you want to add as a crumb.',
         );
         return;
       }
+
+      await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
 
       const trail = await ensureActiveTrail(store);
       if (!trail) {
