@@ -12,9 +12,9 @@
 
 ---
 
-Security Notes allows the creation of notes within source files, which can be replied to, reacted to using emojis, and assigned statuses such as "TODO", "Vulnerable" and "Not Vulnerable".
+Security Notes allows the creation of notes within source files, which can be replied to, reacted to using emojis, and assigned statuses such as "TODO", "Vulnerable" and "Not Vulnerable". Also, it allows importing the output from SAST tools (such as semgrep, bandit and brakeman), into notes, making the processing of the findings much easier.
 
-Also, it allows importing the output from SAST tools (such as semgrep, bandit and brakeman), into notes, making the processing of the findings much easier.
+Use the **Breadcrumbs** feature to track complex implementations accross different source files. This way you will be able to visualize how a feature works, and export it so you can share your analysis with others.  
 
 Finally, collaborate with others by using a centralized database for notes that will be automatically synced in **real-time**! Create a note locally, and it will be automatically pushed to whoever is working with you on the project.
 
