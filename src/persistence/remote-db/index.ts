@@ -3,6 +3,7 @@ import * as rethinkdb from 'rethinkdb';
 import { Serializer } from '../serialization/serializer';
 import { Deserializer } from '../serialization/deserializer';
 import { readFileSync } from 'fs';
+import { saveNotesToFile } from '../local-db';
 
 export class RemoteDb {
   private host: string;
@@ -134,6 +135,7 @@ export class RemoteDb {
             newThread.contextValue ? newThread.contextValue : '',
             newThread,
           );
+          saveNotesToFile(this.noteMap);
           vscode.window.showInformationMessage('Note received from remote DB.');
         });
       });

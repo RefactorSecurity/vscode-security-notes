@@ -5,6 +5,7 @@ import { getReactionGroup } from './reactions/resource';
 import { RemoteDb } from './persistence/remote-db';
 import { v4 as uuidv4 } from 'uuid';
 import { Deserializer } from './persistence/serialization/deserializer';
+import { saveNotesToFile } from './persistence/local-db';
 
 export const saveNoteComment = (
   thread: vscode.CommentThread,
@@ -32,6 +33,7 @@ export const saveNoteComment = (
     thread.contextValue = uuidv4();
     noteMap.set(thread.contextValue, thread);
   }
+  saveNotesToFile(noteMap);
   if (remoteDb) {
     remoteDb.pushNoteComment(thread, firstComment);
   }
@@ -148,6 +150,8 @@ export const syncNoteMapWithRemote = (
       remoteDb && remoteDb.pushNoteComment(localThread, true);
     }
   });
+
+  saveNotesToFile(noteMap);
 };
 
 export const getSetting = (settingName: string, defaultValue?: any) => {
