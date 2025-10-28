@@ -6,9 +6,9 @@ export const formatRangeLabel = (range: vscode.Range) => {
   const startLine = range.start.line + 1;
   const endLine = range.end.line + 1;
   if (startLine === endLine) {
-    return `L${startLine}`;
+    return `${startLine}`;
   }
-  return `L${startLine}-L${endLine}`;
+  return `${startLine}-${endLine}`;
 };
 
 export const snippetPreview = (snippet: string, maxLength = 80) => {
