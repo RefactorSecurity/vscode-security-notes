@@ -202,12 +202,14 @@ async function exportCodeSnippet(uri: vscode.Uri, range: vscode.Range) {
   const output = await vscode.workspace.openTextDocument(uri).then(async (document) => {
     const newRange = new vscode.Range(range.start.line, 0, range.end.line + 1, 0);
     const codeSnippet = await document.getText(newRange).trimEnd();
+
     let lineNumbers;
     if (range.start.line === range.end.line) {
-      lineNumbers = range.start.line;
+      lineNumbers = range.start.line + 1;
     } else {
-      lineNumbers = `${range.start.line}-${range.end.line}`;
+      lineNumbers = `${range.start.line + 1}-${range.end.line + 1}`;
     }
+
     return `\nCode snippet \`${fullPathToRelative(
       uri.fsPath,
     )}:${lineNumbers}\`:\n\n\`\`\`\n${codeSnippet}\n\`\`\`\n`;
