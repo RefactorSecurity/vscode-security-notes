@@ -34,6 +34,17 @@ export const getLocalDbFilePath = () => {
   }
 };
 
+export const getBreadcrumbsDbFilePath = () => {
+  const breadcrumbsDbFilePath = getSetting(
+    'breadcrumbs.localDatabase',
+    '.security-notes-breadcrumbs.json',
+  );
+  if (path.isAbsolute(breadcrumbsDbFilePath)) {
+    return breadcrumbsDbFilePath;
+  }
+  return relativePathToFull(breadcrumbsDbFilePath);
+};
+
 export const relativePathToFull = (aPath: string, basePath?: string) => {
   if (basePath) {
     return path.join(basePath, aPath);

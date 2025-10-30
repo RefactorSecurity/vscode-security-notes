@@ -17,12 +17,45 @@ import {
 } from './helpers';
 import { RemoteDb } from './persistence/remote-db';
 import { loadNotesFromFile, saveNotesToFile } from './persistence/local-db';
+import { BreadcrumbStore } from './breadcrumbs/store';
+import { registerBreadcrumbCommands } from './breadcrumbs/commands';
+import {
+  loadBreadcrumbsFromFile,
+  saveBreadcrumbsToFile,
+} from './persistence/local-db/breadcrumbs';
+import { BreadcrumbsWebview } from './webviews/breadcrumbs/breadcrumbsWebview';
 
 const noteMap = new Map<string, vscode.CommentThread>();
 let remoteDb: RemoteDb | undefined;
+const breadcrumbStore = new BreadcrumbStore();
 
 export function activate(context: vscode.ExtensionContext) {
   Resource.initialize(context);
+  const persistedBreadcrumbState = loadBreadcrumbsFromFile();
+  breadcrumbStore.replaceState(persistedBreadcrumbState);
+  const breadcrumbStoreSubscription = breadcrumbStore.onDidChange(() => {
+    saveBreadcrumbsToFile(breadcrumbStore);
+  });
+  context.subscriptions.push(breadcrumbStoreSubscription);
+
+  const breadcrumbsWebview = new BreadcrumbsWebview(
+    context.extensionUri,
+    breadcrumbStore,
+  );
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      BreadcrumbsWebview.viewType,
+      breadcrumbsWebview,
+    ),
+    breadcrumbsWebview,
+  );
+
+  registerBreadcrumbCommands(context, breadcrumbStore, {
+    onShowTrailDiagram: async (trail) => {
+      breadcrumbStore.setActiveTrail(trail.id);
+      breadcrumbsWebview.reveal(trail.id);
+    },
+  });
   if (getSetting('collab.enabled')) {
     remoteDb = new RemoteDb(
       getSetting('collab.host'),
@@ -280,4 +313,5 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate(context: vscode.ExtensionContext) {
   // persist comments in file
   saveNotesToFile(noteMap);
+  saveBreadcrumbsToFile(breadcrumbStore);
 }
