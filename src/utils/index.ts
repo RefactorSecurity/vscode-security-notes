@@ -59,3 +59,9 @@ export const fullPathToRelative = (aPath: string, basePath?: string) => {
   }
   return path.relative(getWorkspacePath(), aPath);
 };
+
+export const getSetting = (settingName: string, defaultValue?: any) => {
+  return vscode.workspace
+    .getConfiguration('security-notes')
+    .get(settingName, defaultValue);
+};

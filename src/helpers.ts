@@ -6,6 +6,7 @@ import { RemoteDb } from './persistence/remote-db';
 import { v4 as uuidv4 } from 'uuid';
 import { Deserializer } from './persistence/serialization/deserializer';
 import { saveNotesToFile } from './persistence/local-db';
+import { getSetting } from './utils';
 
 export const saveNoteComment = (
   thread: vscode.CommentThread,
@@ -152,10 +153,4 @@ export const syncNoteMapWithRemote = (
   });
 
   saveNotesToFile(noteMap);
-};
-
-export const getSetting = (settingName: string, defaultValue?: any) => {
-  return vscode.workspace
-    .getConfiguration('security-notes')
-    .get(settingName, defaultValue);
 };

@@ -9,8 +9,8 @@ import { ExportNotesWebview } from './webviews/export-notes/exportNotesWebview';
 import { commentController } from './controllers/comments';
 import { reactionHandler } from './handlers/reaction';
 import { saveNotesToFileHandler } from './handlers/saveNotesToFile';
+import { getSetting } from './utils';
 import {
-  getSetting,
   saveNoteComment,
   setNoteStatus,
   syncNoteMapWithRemote,
