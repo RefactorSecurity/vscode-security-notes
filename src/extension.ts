@@ -8,7 +8,6 @@ import { ImportToolResultsWebview } from './webviews/import-tool-results/importT
 import { ExportNotesWebview } from './webviews/export-notes/exportNotesWebview';
 import { commentController } from './controllers/comments';
 import { reactionHandler } from './handlers/reaction';
-import { saveNotesToFileHandler } from './handlers/saveNotesToFile';
 import { getSetting } from './utils';
 import {
   saveNoteComment,
@@ -91,7 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
   // save notes to file handler
   context.subscriptions.push(
     vscode.commands.registerCommand('security-notes.saveNotesToFile', () =>
-      saveNotesToFileHandler(noteMap),
+      saveNotesToFile(noteMap),
     ),
   );
 
@@ -125,12 +124,26 @@ export function activate(context: vscode.ExtensionContext) {
           return;
         }
 
+        let commentRemoved = false;
         thread.comments = thread.comments.filter(
-          (cmt) => (cmt as NoteComment).id !== comment.id,
+          (cmt) => {
+            const shouldKeep = (cmt as NoteComment).id !== comment.id;
+            if (!shouldKeep) {
+              commentRemoved = true;
+            }
+            return shouldKeep;
+          },
         );
 
         if (thread.comments.length === 0) {
+          if (thread.contextValue) {
+            noteMap.delete(thread.contextValue);
+          }
           thread.dispose();
+        }
+
+        if (commentRemoved) {
+          saveNotesToFile(noteMap);
         }
       },
     ),
@@ -144,6 +157,7 @@ export function activate(context: vscode.ExtensionContext) {
         thread.dispose();
         if (thread.contextValue) {
           noteMap.delete(thread.contextValue);
+          saveNotesToFile(noteMap);
         }
       },
     ),
@@ -179,17 +193,22 @@ export function activate(context: vscode.ExtensionContext) {
           return;
         }
 
+        let commentUpdated = false;
         comment.parent.comments = comment.parent.comments.map((cmt) => {
           if ((cmt as NoteComment).id === comment.id) {
             (cmt as NoteComment).savedBody = cmt.body;
             cmt.mode = vscode.CommentMode.Preview;
-          }
-
-          if (remoteDb && comment.parent) {
-            remoteDb.pushNoteComment(comment.parent, false);
+            commentUpdated = true;
           }
           return cmt;
         });
+
+        if (commentUpdated) {
+          saveNotesToFile(noteMap);
+          if (remoteDb) {
+            remoteDb.pushNoteComment(comment.parent, false);
+          }
+        }
       },
     ),
   );
