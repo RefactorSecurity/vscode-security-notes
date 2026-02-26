@@ -107,6 +107,7 @@ export class ExportNotesWebview implements vscode.WebviewViewProvider {
             <p>
               <select id="format-select">
               <option value="markdown">Markdown</option>
+              <option value="json">JSON</option>
               </select>
             </p>
             </br>
@@ -153,7 +154,7 @@ async function exportNotes(
         selectedNotes.map(async (note: any) => {
           // include code snippet
           if (options.includeCodeSnippet) {
-            const codeSnippet = await exportCodeSnippet(note.uri, note.range);
+            const codeSnippet = await exportCodeSnippetMarkdown(note.uri, note.range);
             return codeSnippet + exportComments(note, options);
           }
           return exportComments(note, options);
@@ -165,6 +166,27 @@ async function exportNotes(
         language: 'markdown',
       });
       vscode.window.showTextDocument(document);
+      break;
+    }
+    case 'json': {
+      const noteExports = await Promise.all(
+        selectedNotes.map(async (note: any) => exportNoteToJson(note, options)),
+      );
+      const output = {
+        generatedAt: new Date().toISOString(),
+        noteCount: noteExports.length,
+        notes: noteExports,
+      };
+
+      const document = await vscode.workspace.openTextDocument({
+        content: JSON.stringify(output, null, 2),
+        language: 'json',
+      });
+      vscode.window.showTextDocument(document);
+      break;
+    }
+    default: {
+      vscode.window.showErrorMessage(`[Export] Unsupported format: ${format}`);
     }
   }
 }
@@ -198,21 +220,72 @@ function exportComment(body: string, author: string | undefined) {
   return `\n${body}\n`;
 }
 
-async function exportCodeSnippet(uri: vscode.Uri, range: vscode.Range) {
-  const output = await vscode.workspace.openTextDocument(uri).then(async (document) => {
-    const newRange = new vscode.Range(range.start.line, 0, range.end.line + 1, 0);
-    const codeSnippet = await document.getText(newRange).trimEnd();
+async function exportNoteToJson(note: vscode.CommentThread, options: any) {
+  const comments = [
+    exportCommentToJson(
+      note.comments[0],
+      options.includeAuthors,
+    ),
+  ];
 
-    let lineNumbers;
-    if (range.start.line === range.end.line) {
-      lineNumbers = range.start.line + 1;
-    } else {
-      lineNumbers = `${range.start.line + 1}-${range.end.line + 1}`;
-    }
+  if (options.includeReplies) {
+    note.comments.slice(1).forEach((comment: vscode.Comment) => {
+      comments.push(exportCommentToJson(comment, options.includeAuthors));
+    });
+  }
 
-    return `\nCode snippet \`${fullPathToRelative(
-      uri.fsPath,
-    )}:${lineNumbers}\`:\n\n\`\`\`\n${codeSnippet}\n\`\`\`\n`;
-  });
+  const output: any = {
+    uri: fullPathToRelative(note.uri.fsPath),
+    range: {
+      startLine: note.range.start.line + 1,
+      endLine: note.range.end.line + 1,
+      startCharacter: note.range.start.character,
+      endCharacter: note.range.end.character,
+      lineNumbers: formatLineNumbers(note.range),
+    },
+    comments,
+  };
+
+  if (options.includeCodeSnippet) {
+    output.snippet = await getSnippetDetails(note.uri, note.range);
+  }
+
   return output;
+}
+
+function exportCommentToJson(comment: vscode.Comment, includeAuthor: boolean) {
+  const output: any = {
+    body: comment.body.toString(),
+  };
+
+  if (includeAuthor) {
+    output.author = comment.author.name;
+  }
+
+  if (comment.timestamp) {
+    output.timestamp = comment.timestamp.toISOString();
+  }
+
+  return output;
+}
+
+function formatLineNumbers(range: vscode.Range) {
+  if (range.start.line === range.end.line) {
+    return `${range.start.line + 1}`;
+  }
+
+  return `${range.start.line + 1}-${range.end.line + 1}`;
+}
+
+async function getSnippetDetails(uri: vscode.Uri, range: vscode.Range) {
+  const document = await vscode.workspace.openTextDocument(uri);
+  const newRange = new vscode.Range(range.start.line, 0, range.end.line + 1, 0);
+  const codeSnippet = document.getText(newRange).trimEnd();
+
+  return codeSnippet;
+}
+
+async function exportCodeSnippetMarkdown(uri: vscode.Uri, range: vscode.Range) {
+  const snippet = await getSnippetDetails(uri, range);
+  return `\nCode snippet \`${fullPathToRelative(uri.fsPath)}:${formatLineNumbers(range)}\`:\n\n\`\`\`\n${snippet}\n\`\`\`\n`;
 }

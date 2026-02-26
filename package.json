@@ -3,7 +3,7 @@
   "displayName": "Security Notes",
   "description": "Security Notes streamlines security code reviews by letting you drop rich, inline comments directly in source files, tag each finding with TODO/Vulnerable/Not Vulnerable statuses, and autosave everything to a shareable local database; you can import SAST tool results, collaborate in real time via RethinkDB sync, track investigative breadcrumbs, and export organized reports—all without leaving VS Code.",
   "icon": "resources/security_notes_logo.png",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "publisher": "refactor-security",
   "private": false,
   "license": "MIT",
