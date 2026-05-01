@@ -300,7 +300,8 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint \"src/**/*.ts\""
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "npm run compile && node --test \"test/**/*.test.js\""
   },
   "devDependencies": {
     "@types/node": "^16.11.7",

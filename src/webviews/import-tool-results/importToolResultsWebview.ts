@@ -122,28 +122,40 @@ function processToolFile(
 ) {
   let toolFindings: ToolFinding[] = [];
 
-  // parse tool findings
-  switch (toolName) {
-    case 'bandit': {
-      toolFindings = BanditParser.parse(fileContent);
-      break;
+  try {
+    // parse tool findings
+    switch (toolName) {
+      case 'bandit': {
+        toolFindings = BanditParser.parse(fileContent);
+        break;
+      }
+      case 'brakeman': {
+        toolFindings = BrakemanParser.parse(fileContent);
+        break;
+      }
+      case 'checkov': {
+        toolFindings = CheckovParser.parse(fileContent);
+        break;
+      }
+      case 'gosec': {
+        toolFindings = GosecParser.parse(fileContent);
+        break;
+      }
+      case 'semgrep': {
+        toolFindings = SemgrepParser.parse(fileContent);
+        break;
+      }
+      default: {
+        vscode.window.showErrorMessage(`[Import] Unsupported tool: ${toolName}.`);
+        return;
+      }
     }
-    case 'brakeman': {
-      toolFindings = BrakemanParser.parse(fileContent);
-      break;
-    }
-    case 'checkov': {
-      toolFindings = CheckovParser.parse(fileContent);
-      break;
-    }
-    case 'gosec': {
-      toolFindings = GosecParser.parse(fileContent);
-      break;
-    }
-    case 'semgrep': {
-      toolFindings = SemgrepParser.parse(fileContent);
-      break;
-    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : `${error}`;
+    vscode.window.showErrorMessage(
+      `[Import] Failed to parse ${toolName} results: ${message}`,
+    );
+    return;
   }
 
   if (!toolFindings.length) {
