@@ -44,8 +44,13 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
 
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
+        case 'importError': {
+          vscode.window.showErrorMessage(`[Import] ${data.message}`);
+          break;
+        }
         case 'processToolFile': {
           processToolFile(data.toolName, data.fileContent, this.noteMap, this.remoteDb);
+          break;
         }
       }
     });
@@ -114,6 +119,29 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
   }
 }
 
+export function parseToolFindings(toolName: string, fileContent: string): ToolFinding[] {
+  switch (toolName) {
+    case 'bandit': {
+      return BanditParser.parse(fileContent);
+    }
+    case 'brakeman': {
+      return BrakemanParser.parse(fileContent);
+    }
+    case 'checkov': {
+      return CheckovParser.parse(fileContent);
+    }
+    case 'gosec': {
+      return GosecParser.parse(fileContent);
+    }
+    case 'semgrep': {
+      return SemgrepParser.parse(fileContent);
+    }
+    default: {
+      throw new Error(`Unsupported tool: ${toolName}.`);
+    }
+  }
+}
+
 function processToolFile(
   toolName: string,
   fileContent: string,
@@ -123,33 +151,7 @@ function processToolFile(
   let toolFindings: ToolFinding[] = [];
 
   try {
-    // parse tool findings
-    switch (toolName) {
-      case 'bandit': {
-        toolFindings = BanditParser.parse(fileContent);
-        break;
-      }
-      case 'brakeman': {
-        toolFindings = BrakemanParser.parse(fileContent);
-        break;
-      }
-      case 'checkov': {
-        toolFindings = CheckovParser.parse(fileContent);
-        break;
-      }
-      case 'gosec': {
-        toolFindings = GosecParser.parse(fileContent);
-        break;
-      }
-      case 'semgrep': {
-        toolFindings = SemgrepParser.parse(fileContent);
-        break;
-      }
-      default: {
-        vscode.window.showErrorMessage(`[Import] Unsupported tool: ${toolName}.`);
-        return;
-      }
-    }
+    toolFindings = parseToolFindings(toolName, fileContent);
   } catch (error) {
     const message = error instanceof Error ? error.message : `${error}`;
     vscode.window.showErrorMessage(
@@ -160,7 +162,7 @@ function processToolFile(
 
   if (!toolFindings.length) {
     vscode.window.showErrorMessage(
-      '[Import] An error has ocurred while parsing the file.',
+      '[Import] No findings were found in the selected file.',
     );
     return;
   }
@@ -182,14 +184,14 @@ function processToolFile(
   }
 }
 
-function identifyPotentialDuplicates(
+export function identifyPotentialDuplicates(
   toolName: string,
   noteMap: Map<string, vscode.CommentThread>,
 ) {
-  // return noteList.some((thread) => {
-  //   return thread.comments[0].author.name === toolName;
-  // });
-  return false;
+  return [...noteMap.values()].some((thread) => {
+    const firstComment = thread.comments[0];
+    return firstComment?.author.name.toLowerCase() === toolName.toLowerCase();
+  });
 }
 
 function saveToolFindings(

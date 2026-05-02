@@ -10,20 +10,37 @@
     .addEventListener('click', () => onButtonClicked());
 
   function onButtonClicked() {
-    let toolSelect = document.getElementById('toolSelect');
-    let toolName = toolSelect.options[toolSelect.selectedIndex].value;
+    const toolSelect = document.getElementById('toolSelect');
+    const toolName = toolSelect.options[toolSelect.selectedIndex].value;
+    const fileInput = document.getElementById('fileInput');
+    const selectedFile = fileInput.files[0];
 
-    let selectedFile = document.getElementById('fileInput').files[0];
-    readFile(selectedFile).then((fileContent) => {
-      vscode.postMessage({ type: 'processToolFile', toolName, fileContent }),
-        (document.getElementById('fileInput').value = '');
-    });
+    if (!selectedFile) {
+      vscode.postMessage({
+        type: 'importError',
+        message: 'Select a results file before importing.',
+      });
+      return;
+    }
+
+    readFile(selectedFile)
+      .then((fileContent) => {
+        vscode.postMessage({ type: 'processToolFile', toolName, fileContent });
+        fileInput.value = '';
+      })
+      .catch((error) => {
+        vscode.postMessage({
+          type: 'importError',
+          message: `Failed to read selected file: ${error.message || error}`,
+        });
+      });
   }
 
   async function readFile(file) {
-    let fileContent = await new Promise((resolve) => {
-      let fileReader = new FileReader();
+    const fileContent = await new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
       fileReader.onload = (e) => resolve(fileReader.result);
+      fileReader.onerror = () => reject(fileReader.error);
       fileReader.readAsText(file);
     });
 

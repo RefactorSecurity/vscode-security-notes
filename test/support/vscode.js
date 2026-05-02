@@ -67,6 +67,11 @@ const vscode = {
       get: (_settingName, defaultValue) => defaultValue,
     }),
   },
+  window: {
+    showErrorMessage: () => Promise.resolve(undefined),
+    showInformationMessage: () => Promise.resolve(undefined),
+    showWarningMessage: () => Promise.resolve(undefined),
+  },
 };
 
 const installVsCodeMock = () => {
