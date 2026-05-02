@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { NoteStatus } from '../../models/noteStatus';
 import { fullPathToRelative } from '../../utils';
+import { getNonce, getWebviewContentSecurityPolicy } from '../security';
 
 export class ExportNotesWebview implements vscode.WebviewViewProvider {
   public static readonly viewType = 'export-notes-view';
@@ -66,11 +67,14 @@ export class ExportNotesWebview implements vscode.WebviewViewProvider {
     const styleMainUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'assets', 'main.css'),
     );
+    const nonce = getNonce();
+    const csp = getWebviewContentSecurityPolicy(webview, nonce);
 
     return `<!DOCTYPE html>
 			  <html lang="en">
 				  <head>
 					  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="Content-Security-Policy" content="${csp}">
             <link href="${styleResetUri}" rel="stylesheet">
             <link href="${styleVSCodeUri}" rel="stylesheet">
             <link href="${styleMainUri}" rel="stylesheet">
@@ -116,7 +120,7 @@ export class ExportNotesWebview implements vscode.WebviewViewProvider {
               <button class="export-notes-button">Export</button>
             </p>
 
-            <script src="${scriptUri}"></script>
+            <script nonce="${nonce}" src="${scriptUri}"></script>
 				  </body>
 			  </html>`;
   }

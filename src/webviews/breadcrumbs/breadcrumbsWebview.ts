@@ -7,6 +7,7 @@ import { formatRangeLabel, snippetPreview } from '../../breadcrumbs/format';
 import { fullPathToRelative } from '../../utils';
 import { revealCrumb } from '../../breadcrumbs/commands';
 import { exportTrailToMarkdown } from '../../breadcrumbs/export';
+import { getNonce, getWebviewContentSecurityPolicy } from '../security';
 
 interface WebviewCrumb {
   id: string;
@@ -246,12 +247,14 @@ export class BreadcrumbsWebview implements vscode.WebviewViewProvider, vscode.Di
     );
 
     const nonce = getNonce();
+    const csp = getWebviewContentSecurityPolicy(webview, nonce);
 
     return `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="${csp}">
     <link href="${styleResetUri}" rel="stylesheet">
     <link href="${styleVSCodeUri}" rel="stylesheet">
     <link href="${styleMainUri}" rel="stylesheet">
@@ -282,12 +285,3 @@ export class BreadcrumbsWebview implements vscode.WebviewViewProvider, vscode.Di
 </html>`;
   }
 }
-
-const getNonce = () => {
-  let text = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 32; i += 1) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
-};

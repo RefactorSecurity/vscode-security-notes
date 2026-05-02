@@ -10,6 +10,7 @@ import { SemgrepParser } from '../../parsers/semgrep';
 import { ToolFinding } from '../../models/toolFinding';
 import { saveNoteComment } from '../../helpers';
 import { RemoteDb } from '../../persistence/remote-db';
+import { getNonce, getWebviewContentSecurityPolicy } from '../security';
 
 export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
   public static readonly viewType = 'import-tool-results-view';
@@ -81,11 +82,14 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
     const styleMainUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'assets', 'main.css'),
     );
+    const nonce = getNonce();
+    const csp = getWebviewContentSecurityPolicy(webview, nonce);
 
     return `<!DOCTYPE html>
 			  <html lang="en">
 				  <head>
 					  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="Content-Security-Policy" content="${csp}">
             <link href="${styleResetUri}" rel="stylesheet">
             <link href="${styleVSCodeUri}" rel="stylesheet">
             <link href="${styleMainUri}" rel="stylesheet">
@@ -113,7 +117,7 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
               <button class="process-file-button">Import</button>
             </p>
 
-            <script src="${scriptUri}"></script>
+            <script nonce="${nonce}" src="${scriptUri}"></script>
 				  </body>
 			  </html>`;
   }
