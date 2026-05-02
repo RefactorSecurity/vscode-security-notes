@@ -26,7 +26,8 @@ export class Deserializer {
     parent: CommentThread | undefined,
   ): NoteComment {
     const deserializedReactions: any[] = [];
-    comment.reactions.forEach((reaction: any) => {
+    const reactions = Array.isArray(comment.reactions) ? comment.reactions : [];
+    reactions.forEach((reaction: any) => {
       deserializedReactions.push(this.deserializeReaction(reaction));
     });
     const newComment = new NoteComment(

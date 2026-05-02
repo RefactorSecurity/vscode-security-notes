@@ -1,50 +1,14 @@
 const assert = require('node:assert/strict');
-const Module = require('node:module');
 const path = require('node:path');
 const test = require('node:test');
+const {
+  installVsCodeMock,
+  Range,
+  Uri,
+  workspaceRoot,
+} = require('./support/vscode');
 
-const workspaceRoot = path.resolve(__dirname, '..');
-const originalLoad = Module._load;
-
-class Position {
-  constructor(line, character) {
-    this.line = line;
-    this.character = character;
-  }
-}
-
-class Range {
-  constructor(startLine, startCharacter, endLine, endCharacter) {
-    this.start = new Position(startLine, startCharacter);
-    this.end = new Position(endLine, endCharacter);
-  }
-}
-
-class Uri {
-  constructor(fsPath) {
-    this.fsPath = fsPath;
-  }
-
-  static file(fsPath) {
-    return new Uri(fsPath);
-  }
-}
-
-Module._load = function mockVsCode(request, parent, isMain) {
-  if (request === 'vscode') {
-    return {
-      Range,
-      Uri,
-      workspace: {
-        workspaceFolders: [{ uri: Uri.file(workspaceRoot) }],
-        getConfiguration: () => ({
-          get: (_settingName, defaultValue) => defaultValue,
-        }),
-      },
-    };
-  }
-  return originalLoad.call(this, request, parent, isMain);
-};
+installVsCodeMock();
 
 const { BanditParser } = require('../out/parsers/bandit');
 const { BrakemanParser } = require('../out/parsers/brakeman');
