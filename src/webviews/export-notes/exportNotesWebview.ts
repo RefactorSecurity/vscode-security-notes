@@ -1,6 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import { NoteStatus } from '../../models/noteStatus';
 import { fullPathToRelative } from '../../utils';
 
 export class ExportNotesWebview implements vscode.WebviewViewProvider {
@@ -121,6 +122,47 @@ export class ExportNotesWebview implements vscode.WebviewViewProvider {
   }
 }
 
+interface ExportStatusSelection {
+  vulnerable?: boolean;
+  notVulnerable?: boolean;
+  todo?: boolean;
+  noStatus?: boolean;
+}
+
+const STATUS_PREFIXES = Object.values(NoteStatus).map((status) => `[${status}] `);
+
+export function hasKnownStatusPrefix(body: string) {
+  return STATUS_PREFIXES.some((prefix) => body.startsWith(prefix));
+}
+
+export function noteMatchesExportStatus(
+  note: vscode.CommentThread,
+  status: ExportStatusSelection,
+) {
+  const firstComment = note.comments[0];
+  if (!firstComment) {
+    return false;
+  }
+
+  const firstCommentBody = firstComment.body.toString();
+  return (
+    (status.vulnerable && firstCommentBody.startsWith(`[${NoteStatus.Vulnerable}] `)) ||
+    (
+      status.notVulnerable &&
+      firstCommentBody.startsWith(`[${NoteStatus.NotVulnerable}] `)
+    ) ||
+    (status.todo && firstCommentBody.startsWith(`[${NoteStatus.TODO}] `)) ||
+    (status.noStatus && !hasKnownStatusPrefix(firstCommentBody))
+  );
+}
+
+export function selectNotesForExport(
+  noteMap: Map<string, vscode.CommentThread>,
+  status: ExportStatusSelection,
+) {
+  return [...noteMap.values()].filter((note) => noteMatchesExportStatus(note, status));
+}
+
 async function exportNotes(
   status: any,
   options: any,
@@ -128,19 +170,7 @@ async function exportNotes(
   noteMap: Map<string, vscode.CommentThread>,
 ) {
   // filter notes based on selected status
-  const selectedNotes = [...noteMap]
-    .map(([_id, note]) => {
-      const firstComment = note.comments[0].body.toString();
-      if (
-        (status.vulnerable && firstComment.startsWith('[Vulnerable] ')) ||
-        (status.notVulnerable && firstComment.startsWith('[Not Vulnerable] ')) ||
-        (status.todo && firstComment.startsWith('[TODO] ')) ||
-        status.noStatus
-      ) {
-        return note;
-      }
-    })
-    .filter((element) => element !== undefined);
+  const selectedNotes = selectNotesForExport(noteMap, status);
 
   if (!selectedNotes.length) {
     vscode.window.showInformationMessage('[Export] No notes met the criteria.');
