@@ -4,6 +4,7 @@ const path = require('node:path');
 const workspaceRoot = path.resolve(__dirname, '../..');
 const originalLoad = Module._load;
 let installed = false;
+const configuration = {};
 
 class Position {
   constructor(line, character) {
@@ -51,11 +52,34 @@ const createCommentController = () => ({
   dispose: () => {},
 });
 
+class EventEmitter {
+  constructor() {
+    this.listeners = new Set();
+    this.event = (listener) => {
+      this.listeners.add(listener);
+      return {
+        dispose: () => {
+          this.listeners.delete(listener);
+        },
+      };
+    };
+  }
+
+  fire(value) {
+    this.listeners.forEach((listener) => listener(value));
+  }
+
+  dispose() {
+    this.listeners.clear();
+  }
+}
+
 const vscode = {
   CommentMode: {
     Preview: 0,
     Editing: 1,
   },
+  EventEmitter,
   Range,
   Uri,
   comments: {
@@ -64,7 +88,11 @@ const vscode = {
   workspace: {
     workspaceFolders: [{ uri: Uri.file(workspaceRoot) }],
     getConfiguration: () => ({
-      get: (_settingName, defaultValue) => defaultValue,
+      get: (settingName, defaultValue) => (
+        Object.prototype.hasOwnProperty.call(configuration, settingName)
+          ? configuration[settingName]
+          : defaultValue
+      ),
     }),
   },
   window: {
@@ -72,6 +100,16 @@ const vscode = {
     showInformationMessage: () => Promise.resolve(undefined),
     showWarningMessage: () => Promise.resolve(undefined),
   },
+};
+
+const setConfiguration = (settingName, value) => {
+  configuration[settingName] = value;
+};
+
+const resetConfiguration = () => {
+  Object.keys(configuration).forEach((settingName) => {
+    delete configuration[settingName];
+  });
 };
 
 const installVsCodeMock = () => {
@@ -93,6 +131,8 @@ module.exports = {
   Position,
   Range,
   Uri,
+  resetConfiguration,
+  setConfiguration,
   vscode,
   workspaceRoot,
 };
