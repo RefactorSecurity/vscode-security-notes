@@ -10,6 +10,7 @@ import { SemgrepParser } from '../../parsers/semgrep';
 import { ToolFinding } from '../../models/toolFinding';
 import { saveNoteComment } from '../../helpers';
 import { RemoteDb } from '../../persistence/remote-db';
+import { getNonce, getWebviewContentSecurityPolicy } from '../security';
 
 export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
   public static readonly viewType = 'import-tool-results-view';
@@ -44,8 +45,13 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
 
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
+        case 'importError': {
+          vscode.window.showErrorMessage(`[Import] ${data.message}`);
+          break;
+        }
         case 'processToolFile': {
           processToolFile(data.toolName, data.fileContent, this.noteMap, this.remoteDb);
+          break;
         }
       }
     });
@@ -76,11 +82,14 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
     const styleMainUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, 'src', 'webviews', 'assets', 'main.css'),
     );
+    const nonce = getNonce();
+    const csp = getWebviewContentSecurityPolicy(webview, nonce);
 
     return `<!DOCTYPE html>
 			  <html lang="en">
 				  <head>
 					  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="Content-Security-Policy" content="${csp}">
             <link href="${styleResetUri}" rel="stylesheet">
             <link href="${styleVSCodeUri}" rel="stylesheet">
             <link href="${styleMainUri}" rel="stylesheet">
@@ -108,9 +117,32 @@ export class ImportToolResultsWebview implements vscode.WebviewViewProvider {
               <button class="process-file-button">Import</button>
             </p>
 
-            <script src="${scriptUri}"></script>
+            <script nonce="${nonce}" src="${scriptUri}"></script>
 				  </body>
 			  </html>`;
+  }
+}
+
+export function parseToolFindings(toolName: string, fileContent: string): ToolFinding[] {
+  switch (toolName) {
+    case 'bandit': {
+      return BanditParser.parse(fileContent);
+    }
+    case 'brakeman': {
+      return BrakemanParser.parse(fileContent);
+    }
+    case 'checkov': {
+      return CheckovParser.parse(fileContent);
+    }
+    case 'gosec': {
+      return GosecParser.parse(fileContent);
+    }
+    case 'semgrep': {
+      return SemgrepParser.parse(fileContent);
+    }
+    default: {
+      throw new Error(`Unsupported tool: ${toolName}.`);
+    }
   }
 }
 
@@ -122,33 +154,19 @@ function processToolFile(
 ) {
   let toolFindings: ToolFinding[] = [];
 
-  // parse tool findings
-  switch (toolName) {
-    case 'bandit': {
-      toolFindings = BanditParser.parse(fileContent);
-      break;
-    }
-    case 'brakeman': {
-      toolFindings = BrakemanParser.parse(fileContent);
-      break;
-    }
-    case 'checkov': {
-      toolFindings = CheckovParser.parse(fileContent);
-      break;
-    }
-    case 'gosec': {
-      toolFindings = GosecParser.parse(fileContent);
-      break;
-    }
-    case 'semgrep': {
-      toolFindings = SemgrepParser.parse(fileContent);
-      break;
-    }
+  try {
+    toolFindings = parseToolFindings(toolName, fileContent);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : `${error}`;
+    vscode.window.showErrorMessage(
+      `[Import] Failed to parse ${toolName} results: ${message}`,
+    );
+    return;
   }
 
   if (!toolFindings.length) {
     vscode.window.showErrorMessage(
-      '[Import] An error has ocurred while parsing the file.',
+      '[Import] No findings were found in the selected file.',
     );
     return;
   }
@@ -170,14 +188,14 @@ function processToolFile(
   }
 }
 
-function identifyPotentialDuplicates(
+export function identifyPotentialDuplicates(
   toolName: string,
   noteMap: Map<string, vscode.CommentThread>,
 ) {
-  // return noteList.some((thread) => {
-  //   return thread.comments[0].author.name === toolName;
-  // });
-  return false;
+  return [...noteMap.values()].some((thread) => {
+    const firstComment = thread.comments[0];
+    return firstComment?.author.name.toLowerCase() === toolName.toLowerCase();
+  });
 }
 
 function saveToolFindings(

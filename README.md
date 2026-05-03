@@ -42,6 +42,8 @@ Security Notes allows the creation of notes within source files, which can be re
 
 By default your notes are backed up in a JSON file once you close VSCode. Once you open the project again, saved comments are loaded and shown on the UI.
 
+Notes are stored in `.security-notes.json` by default, using workspace-relative paths so saved notes can move with the project. Breadcrumb trails are stored separately in `.security-notes-breadcrumbs.json`. Changes to either file format should preserve compatibility with existing saved files unless a migration is intentionally introduced.
+
 ## Breadcrumb Trails
 
 Breadcrumbs let you capture the path you follow while reverse-engineering a feature. Start a trail with `Security Notes: Create Breadcrumb Trail`, highlight the snippets you visit, and run `Security Notes: Add Breadcrumb to Trail` to drop "crumbs" along the way. Each crumb stores the code selection, file/line information, and an optional note.
@@ -124,9 +126,24 @@ We welcome contributions to Security Notes! These are the many ways you can help
 
 - Clone the repo
 - Run `npm install` to install dependencies
+- Run `npm run compile` to build the extension once
+- Run `npm run lint` to check TypeScript style
+- Run `npm test` to run the test suite using Node's built-in test runner
 - Run the `Run Extension` target in the Debug View. This will:
   - Start a task `npm: watch` to compile the code
   - Run the extension in a new VS Code window
+
+### Quality checks
+
+Before submitting changes, run:
+
+```bash
+npm run compile
+npm run lint
+npm test
+```
+
+The tests cover parser behavior, note and breadcrumb serialization, local persistence, status handling, export filtering, and webview security checks.
 
 ## Acknowledgments
 

@@ -1,6 +1,7 @@
 'use strict';
 
 import * as fs from 'fs';
+import * as vscode from 'vscode';
 import { Serializer } from '../serialization/serializer';
 import { Deserializer } from '../serialization/deserializer';
 import { CommentThread } from 'vscode';
@@ -18,11 +19,17 @@ export const saveNotesToFile = (noteMap: Map<string, CommentThread>) => {
 
 export const loadNotesFromFile = (): CommentThread[] => {
   // Check if persistence file exists and load comments
-  if (fs.existsSync(persistenceFile)) {
+  if (!fs.existsSync(persistenceFile)) {
+    return [];
+  }
+
+  try {
     const jsonFile = fs.readFileSync(persistenceFile).toString();
     const persistedThreads = JSON.parse(jsonFile);
     return Deserializer.deserialize(persistedThreads);
-  } else {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : `${error}`;
+    vscode.window.showErrorMessage(`[Notes] Failed to load notes from file: ${message}`);
     return [];
   }
 };

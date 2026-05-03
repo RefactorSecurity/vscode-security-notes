@@ -5,17 +5,19 @@ import { Trail } from '../models/breadcrumb';
 import { formatRangeLabel } from './format';
 import { fullPathToRelative } from '../utils';
 
-const escapeCodeBlock = (value: string) => value.replace(/```/g, '\`\`\`');
-
 const headline = (level: number, text: string) => `${'#'.repeat(level)} ${text}`;
 
 const formatDate = (value: string | undefined) =>
   value ? new Date(value).toLocaleString() : undefined;
 
+const codeFenceFor = (value: string) => {
+  const backtickRuns: string[] = value.match(/`+/g) ?? [];
+  const longestRun = backtickRuns.reduce((max, run) => Math.max(max, run.length), 0);
+  return '`'.repeat(Math.max(3, longestRun + 1));
+};
+
 const buildSummary = (trail: Trail) => {
   const files = new Set(trail.crumbs.map((crumb) => fullPathToRelative(crumb.uri.fsPath)));
-  const first = formatDate(trail.crumbs[0]?.createdAt);
-  const last = formatDate(trail.crumbs[trail.crumbs.length - 1]?.createdAt);
 
   const lines: string[] = [];
   lines.push(headline(2, 'Summary'));
@@ -42,17 +44,18 @@ const buildCrumbSection = (trail: Trail) => {
     if (crumb.note) {
       lines.push(`- **Note:** ${crumb.note}`);
     }
+    const codeFence = codeFenceFor(crumb.snippet);
     lines.push('');
-    lines.push('```');
-    lines.push(escapeCodeBlock(crumb.snippet));
-    lines.push('```');
+    lines.push(codeFence);
+    lines.push(crumb.snippet);
+    lines.push(codeFence);
     lines.push('');
   });
 
   return lines.join('\n');
 };
 
-const generateTrailMarkdown = (trail: Trail) => {
+export const generateTrailMarkdown = (trail: Trail) => {
   const lines: string[] = [];
   lines.push(headline(1, `Breadcrumb Trail – ${trail.name}`));
   lines.push('');
