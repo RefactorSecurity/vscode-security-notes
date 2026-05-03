@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { ToolFinding } from '../models/toolFinding';
 import { relativePathToFull } from '../utils';
+import { isNonEmptyString, toPositiveLineNumber } from './utils';
 
 class BrakemanParser {
   static parse(fileContent: string) {
@@ -14,14 +15,24 @@ class BrakemanParser {
     }
 
     brakemanFindings.forEach((brakemanFinding: any) => {
+      const line = toPositiveLineNumber(brakemanFinding.line);
+      if (
+        !isNonEmptyString(brakemanFinding.file) ||
+        !isNonEmptyString(brakemanFinding.warning_type) ||
+        !isNonEmptyString(brakemanFinding.message) ||
+        line === undefined
+      ) {
+        return;
+      }
+
       // uri
       const uri = vscode.Uri.file(relativePathToFull(brakemanFinding.file));
 
       // range
       const range = new vscode.Range(
-        brakemanFinding.line - 1,
+        line - 1,
         0,
-        brakemanFinding.line - 1,
+        line - 1,
         0,
       );
 

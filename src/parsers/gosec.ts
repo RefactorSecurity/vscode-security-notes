@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import { ToolFinding } from '../models/toolFinding';
+import { isNonEmptyString, toPositiveLineNumber } from './utils';
 
 class GosecParser {
   static parse(fileContent: string) {
@@ -13,11 +14,19 @@ class GosecParser {
     }
 
     gosecFindings.forEach((gosecFinding: any) => {
+      const line = toPositiveLineNumber(gosecFinding.line);
+      if (
+        !isNonEmptyString(gosecFinding.file) ||
+        !isNonEmptyString(gosecFinding.details) ||
+        line === undefined
+      ) {
+        return;
+      }
+
       // uri
       const uri = vscode.Uri.file(gosecFinding.file);
 
       // range
-      const line = gosecFinding.line;
       const range = new vscode.Range(line - 1, 0, line - 1, 0);
 
       // instantiate tool finding and add to list

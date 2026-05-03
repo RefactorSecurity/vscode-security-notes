@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { ToolFinding } from '../models/toolFinding';
 import { relativePathToFull } from '../utils';
+import { isNonEmptyString, toPositiveLineNumber } from './utils';
 
 class CheckovParser {
   static parse(fileContent: string) {
@@ -20,14 +21,29 @@ class CheckovParser {
       }
 
       checkovFindings.forEach((checkovFinding: any) => {
+        const startLine = Array.isArray(checkovFinding.file_line_range)
+          ? toPositiveLineNumber(checkovFinding.file_line_range[0])
+          : undefined;
+        const endLine = Array.isArray(checkovFinding.file_line_range)
+          ? toPositiveLineNumber(checkovFinding.file_line_range[1])
+          : undefined;
+        if (
+          !isNonEmptyString(checkovFinding.file_path) ||
+          !isNonEmptyString(checkovFinding.check_name) ||
+          startLine === undefined ||
+          endLine === undefined
+        ) {
+          return;
+        }
+
         // uri
         const uri = vscode.Uri.file(relativePathToFull(checkovFinding.file_path));
 
         // range
         const range = new vscode.Range(
-          checkovFinding.file_line_range[0] - 1,
+          startLine - 1,
           0,
-          checkovFinding.file_line_range[1] - 1,
+          endLine - 1,
           0,
         );
 

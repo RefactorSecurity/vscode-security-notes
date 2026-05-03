@@ -126,6 +126,128 @@ test('parsers return no findings for unsupported valid shapes', () => {
   assert.deepEqual(SemgrepParser.parse('{}'), []);
 });
 
+test('BanditParser skips findings with missing required fields', () => {
+  const findings = BanditParser.parse(JSON.stringify({
+    results: [
+      {
+        filename: 'app/example.py',
+        line_range: [3, 5],
+        issue_text: 'Possible hardcoded password',
+      },
+      {
+        filename: 'app/invalid.py',
+        issue_text: 'Missing line range',
+      },
+    ],
+  }));
+
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].uri.fsPath, path.join(workspaceRoot, 'app/example.py'));
+});
+
+test('BrakemanParser skips findings with missing required fields', () => {
+  const findings = BrakemanParser.parse(JSON.stringify({
+    warnings: [
+      {
+        file: 'app/controllers/users_controller.rb',
+        line: 12,
+        warning_type: 'SQL Injection',
+        message: 'Possible SQL injection',
+      },
+      {
+        file: 'app/controllers/admin_controller.rb',
+        warning_type: 'Cross Site Scripting',
+        message: 'Missing line number',
+      },
+    ],
+  }));
+
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].text, 'SQL Injection: Possible SQL injection');
+});
+
+test('CheckovParser skips findings with missing required fields', () => {
+  const findings = CheckovParser.parse(JSON.stringify([
+    {
+      results: {
+        failed_checks: [
+          {
+            file_path: 'infra/main.tf',
+            file_line_range: [7, 9],
+            check_name: 'Ensure bucket encryption is enabled',
+          },
+          {
+            file_path: 'infra/missing.tf',
+            check_name: 'Missing line range',
+          },
+        ],
+      },
+    },
+  ]));
+
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].text, 'Ensure bucket encryption is enabled');
+});
+
+test('GosecParser skips findings with missing required fields', () => {
+  const absolutePath = path.join(workspaceRoot, 'cmd/server/main.go');
+  const findings = GosecParser.parse(JSON.stringify({
+    Issues: [
+      {
+        file: absolutePath,
+        line: '22',
+        details: 'Potential file inclusion via variable',
+      },
+      {
+        file: path.join(workspaceRoot, 'cmd/server/invalid.go'),
+        details: 'Missing line number',
+      },
+    ],
+  }));
+
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].uri.fsPath, absolutePath);
+});
+
+test('SemgrepParser skips findings with missing required fields', () => {
+  const findings = SemgrepParser.parse(JSON.stringify({
+    results: [
+      {
+        path: 'src/server.ts',
+        start: { line: 4 },
+        end: { line: 6 },
+        extra: { message: 'Detected unsafe redirect' },
+      },
+      {
+        path: 'src/invalid.ts',
+        start: { line: 1 },
+        extra: { message: 'Missing end line' },
+      },
+    ],
+  }));
+
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].text, 'Detected unsafe redirect');
+});
+
+test('parsers return no findings when all entries are invalid', () => {
+  assert.deepEqual(BanditParser.parse(JSON.stringify({
+    results: [{ filename: 'app/example.py', issue_text: 'Missing line range' }],
+  })), []);
+  assert.deepEqual(BrakemanParser.parse(JSON.stringify({
+    warnings: [{ file: 'app/example.rb', line: 1, message: 'Missing warning type' }],
+  })), []);
+  assert.deepEqual(CheckovParser.parse(JSON.stringify([
+    { results: { failed_checks: [{ file_path: 'main.tf', check_name: 'Missing range' }] } },
+  ])), []);
+  assert.deepEqual(GosecParser.parse(JSON.stringify({
+    Issues: [{ file: 'main.go', details: 'Missing line' }],
+  })), []);
+  assert.deepEqual(SemgrepParser.parse(JSON.stringify({
+    results: [{ path: 'src/server.ts', start: { line: 1 }, extra: { message: 'Missing end' } }],
+  })), []);
+});
+
 test('breadcrumb markdown uses a fence longer than snippet backtick runs', () => {
   const markdown = generateTrailMarkdown({
     id: 'trail-1',

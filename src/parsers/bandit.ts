@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { ToolFinding } from '../models/toolFinding';
 import { relativePathToFull } from '../utils';
+import { isNonEmptyString, toPositiveLineNumber } from './utils';
 
 class BanditParser {
   static parse(fileContent: string) {
@@ -14,15 +15,29 @@ class BanditParser {
     }
 
     banditFindings.forEach((banditFinding: any) => {
+      const startLine = Array.isArray(banditFinding.line_range)
+        ? toPositiveLineNumber(banditFinding.line_range[0])
+        : undefined;
+      const endLine = Array.isArray(banditFinding.line_range)
+        ? toPositiveLineNumber(banditFinding.line_range[1]) ?? startLine
+        : undefined;
+      if (
+        !isNonEmptyString(banditFinding.filename) ||
+        !isNonEmptyString(banditFinding.issue_text) ||
+        startLine === undefined ||
+        endLine === undefined
+      ) {
+        return;
+      }
+
       // uri
       const uri = vscode.Uri.file(relativePathToFull(banditFinding.filename));
 
       // range
-      const lineRange = banditFinding.line_range;
       const range = new vscode.Range(
-        lineRange[0] - 1,
+        startLine - 1,
         0,
-        (lineRange[1] ? lineRange[1] : lineRange[0]) - 1,
+        endLine - 1,
         0,
       );
 
